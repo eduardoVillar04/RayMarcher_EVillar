@@ -1,91 +1,93 @@
 using UnityEngine;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.Rendering.RenderGraphModule;
-
+using UnityEngine.Rendering.RenderGraphModule.Util;
 
 public class RayMarcherFeature : ScriptableRendererFeature
-{
-    class RayMarchPass : ScriptableRenderPass
+{    
+    [Tooltip("The material used when making the blit operation.")]
+    public Material material;
+
+    [Tooltip("The event where to inject the pass.")]
+    public RenderPassEvent injectionPoint = RenderPassEvent.AfterRenderingPostProcessing;
+
+    public class RayMarcherPass : ScriptableRenderPass
     {
-        const string passName = "Ray March Fullscreen Pass";
-        Material rayMarchMaterial;
-        RTHandle cameraColorTarget;
-        RTHandle rayMarchTempTexture;
+        const string m_PassName = "RayMarcherPass";
 
-        public RayMarchPass(Material material)
+        // Material used in the blit operation.
+        Material m_RayMarchMat;
+
+        // Function used to transfer the material from the renderer feature to the render pass.
+        public void Setup(Material mat)
         {
-            rayMarchMaterial = material;
+            m_RayMarchMat = mat;
+
+            //The pass will read the current color texture. That needs to be an intermediate texture. It's not supported to use the BackBuffer as input texture. 
+            //By setting this property, URP will automatically create an intermediate texture. 
+            //It's good practice to set it here and not from the RenderFeature. This way, the pass is selfcontaining and you can use it to directly enqueue the pass from a monobehaviour without a RenderFeature.
+            requiresIntermediateTexture = true;
         }
 
-        public void Setup(RTHandle cameraColorHandle)
+        public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
-            cameraColorTarget = cameraColorHandle;
-        }
 
-        public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
-        {
-            RenderTextureDescriptor cameraDescriptor = renderingData.cameraData.cameraTargetDescriptor;
-
-            cameraDescriptor.depthBufferBits = 0;
-
-            RenderingUtils.ReAllocateHandleIfNeeded(ref rayMarchTempTexture, cameraDescriptor, name: "_RayMarchTempTexture");
-        }
-
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-        {
-            if(rayMarchMaterial == null) return;
-
-            CommandBuffer cmd = CommandBufferPool.Get(passName);
-
-            Blitter.BlitCameraTexture(cmd, cameraColorTarget, rayMarchTempTexture, rayMarchMaterial, 0);
-
-            Blitter.BlitCameraTexture(cmd, rayMarchTempTexture, cameraColorTarget);
-
-            context.ExecuteCommandBuffer(cmd);
-            CommandBufferPool.Release(cmd);
-        }
-
-        public override void OnCameraCleanup(CommandBuffer cmd)
-        {
-            if(rayMarchTempTexture != null)
+            // UniversalResourceData contains all the texture handles used by the renderer, including the active color and depth textures
+            // The active color and depth textures are the main color and depth buffers that the camera renders into
+            var resourceData = frameData.Get<UniversalResourceData>();
+            //This should never happen since we set m_Pass.requiresIntermediateTexture = true;
+            //Unless you set the render event to AfterRendering, where we only have the BackBuffer. 
+            if (resourceData.isActiveTargetBackBuffer)
             {
-                rayMarchTempTexture.Release();
-                rayMarchTempTexture = null;
+                Debug.LogError($"Skipping render pass. RayMarcherPass requires an intermediate ColorTexture, we can't use the BackBuffer as a texture input.");
+                return;
             }
+
+            // The destination texture is created here, 
+            // the texture is created with the same dimensions as the active color texture
+            var source = resourceData.activeColorTexture;
+
+            var destinationDesc = renderGraph.GetTextureDesc(source);
+            destinationDesc.name = $"CameraColor-{m_PassName}";
+            destinationDesc.clearBuffer = false;
+
+            TextureHandle destination = renderGraph.CreateTexture(destinationDesc);
+
+            RenderGraphUtils.BlitMaterialParameters para = new(source, destination, m_RayMarchMat, 0);
+            renderGraph.AddBlitPass(para, passName: m_PassName);
+
+            //FrameData allows to get and set internal pipeline buffers. Here we update the CameraColorBuffer to the texture that we just wrote to in this pass. 
+            //Because RenderGraph manages the pipeline resources and dependencies, following up passes will correctly use the right color buffer.
+            //This optimization has some caveats. You have to be careful when the color buffer is persistent across frames and between different cameras, such as in camera stacking.
+            //In those cases you need to make sure your texture is an RTHandle and that you properly manage the lifecycle of it.
+            resourceData.cameraColor = destination;
         }
     }
 
-    // Feature settings
-    public Shader m_RayMarcherShader;
-    private Material m_RayMarcherMat;
-    public RenderPassEvent injectionPoint = RenderPassEvent.AfterRenderingOpaques;
+    RayMarcherPass m_Pass;
 
-    RayMarchPass m_RayMarchPass;
-
+    // Here you can create passes and do the initialization of them. This is called everytime serialization happens.
     public override void Create()
     {
-        m_RayMarchPass = new RayMarchPass();
+        m_Pass = new RayMarcherPass();
 
-        m_RayMarcherMat = CoreUtils.CreateEngineMaterial(m_RayMarcherShader);
-
-        m_RayMarchPass.renderPassEvent = injectionPoint;
+        // Configures where the render pass should be injected.
+        m_Pass.renderPassEvent = injectionPoint;
     }
 
+    // Here you can inject one or multiple render passes in the renderer.
+    // This method is called when setting up the renderer once per-camera.
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        if(m_RayMarcherMat == null)
+        // Early exit if there are no materials.
+        if (material == null)
         {
-            Debug.LogWarning("RayMarcherFeature shader not set and will be skipped");
+            Debug.LogWarning("DitherEffectRendererFeature material is null and will be skipped.");
             return;
         }
 
-        m_RayMarchPass.Setup();
-        renderer.EnqueuePass(m_RayMarchPass);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CoreUtils.Destroy(m_RayMarcherMat);
+        m_Pass.Setup(material);
+        renderer.EnqueuePass(m_Pass);        
     }
 }
