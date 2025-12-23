@@ -24,6 +24,15 @@ public class RayMarcherFeature : ScriptableRendererFeature
         {
             m_RayMarchMat = mat;
 
+            Camera cam = Camera.main;
+
+            float planeHeight = cam.nearClipPlane * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) * 2;
+            float planeWidth = planeHeight * cam.aspect;
+
+
+            m_RayMarchMat.SetVector("_ViewParams", new Vector3(planeWidth, planeHeight, cam.nearClipPlane));
+            m_RayMarchMat.SetMatrix("_CamLocalToWorldMatrix", cam.transform.localToWorldMatrix);
+
             //The pass will read the current color texture. That needs to be an intermediate texture. It's not supported to use the BackBuffer as input texture. 
             //By setting this property, URP will automatically create an intermediate texture. 
             //It's good practice to set it here and not from the RenderFeature. This way, the pass is selfcontaining and you can use it to directly enqueue the pass from a monobehaviour without a RenderFeature.
