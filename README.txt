@@ -1,5 +1,5 @@
 # Roadmap
-## Milestone 1 – Dec 17 to Dec 24
+## Milestone 1 – Dec 17 to Dec 24 -> Completed 23/12/2023 with commit "Shader rays behave using unity main camera logic"
 Build the foundation of the ray marcher and Custom Render Feature. 
 Ray marcher renders a single primitive on screen through a Custom Render Feature.
 
