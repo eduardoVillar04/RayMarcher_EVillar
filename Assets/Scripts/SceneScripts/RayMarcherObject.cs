@@ -3,9 +3,40 @@ using UnityEngine;
 [ExecuteAlways]
 public class RayMarcherObject : MonoBehaviour
 {
-    [SerializeField] protected PrimitiveType type = PrimitiveType.SPHERE;
-    [SerializeField] protected OperationType operationType = OperationType.NONE;
-    [SerializeField] protected Vector3 size = Vector3.one;
+    public PrimitiveType type = PrimitiveType.SPHERE;
+
+    // We need to update the list the obj is whenever the operation type changes
+    [SerializeField] private OperationType _operationType;
+    public OperationType operationType
+    {
+        get => _operationType;
+        set
+        {
+            if (_operationType == value)
+                return;
+            Debug.Log("changing");
+            RayMarcherObjManager.Instance.RemoveObjFromList(this, operationType);
+            _operationType = value;
+            RayMarcherObjManager.Instance.AddObjToList(this, operationType);
+        }
+    }
+
+    // Control variable to update the obj in the manager when it changes through the menu
+    private OperationType lastOperationType;
+
+    public Vector3 size = Vector3.one;
+
+    private void OnValidate()
+    {
+        // If the op type was changed in the inspector update the obj in the manager
+        if (lastOperationType != operationType)
+        {
+            RayMarcherObjManager.Instance.RemoveObjFromList(this, lastOperationType);
+            RayMarcherObjManager.Instance.AddObjToList(this, operationType);
+            lastOperationType = operationType;
+        }
+    }
+
 
     private void Awake()
     {
@@ -15,13 +46,15 @@ public class RayMarcherObject : MonoBehaviour
         }
         else
         {
-            RayMarcherObjManager.Instance.AddObjToList(this);
+            RayMarcherObjManager.Instance.AddObjToList(this, operationType);
         }
+
+        lastOperationType = operationType;
     }
 
     private void OnDisable()
     {
-        RayMarcherObjManager.Instance?.RemoveObjFromList(this);
+        RayMarcherObjManager.Instance?.RemoveObjFromList(this, operationType);
     }
 
     private void OnDrawGizmos()
@@ -40,7 +73,6 @@ public class RayMarcherObject : MonoBehaviour
                 break;
         }
     }
-
 }
 
 public enum PrimitiveType

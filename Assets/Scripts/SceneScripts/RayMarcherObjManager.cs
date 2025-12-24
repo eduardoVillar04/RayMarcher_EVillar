@@ -6,8 +6,12 @@ using UnityEngine;
 public class RayMarcherObjManager : MonoBehaviour
 {
     public static RayMarcherObjManager Instance;
-    
-    [SerializeField] private List<RayMarcherObject> m_RayMarcherObjs = new List<RayMarcherObject>();
+
+    [SerializeField] private List<RayMarcherObject> m_DefaultObjs = new List<RayMarcherObject>();
+    [SerializeField] private List<RayMarcherObject> m_BlendObjs = new List<RayMarcherObject>();
+
+    // Control bool to stop bad behaviour in editor mode
+    private bool isDirty = false;
 
     private void Awake()
     {
@@ -24,13 +28,34 @@ public class RayMarcherObjManager : MonoBehaviour
         }
     }
 
-    public void AddObjToList(RayMarcherObject obj)
+
+    public void AddObjToList(RayMarcherObject obj, OperationType opType)
     {
-        m_RayMarcherObjs.Add(obj);
+        switch (opType)
+        {
+            case OperationType.NONE:
+                m_DefaultObjs.Add(obj);
+                break;
+            case OperationType.BLEND:
+                m_BlendObjs.Add(obj);
+                break;
+            default:
+                break;
+        }
     }
 
-    public void RemoveObjFromList(RayMarcherObject obj)
+    public void RemoveObjFromList(RayMarcherObject obj, OperationType opType)
     {
-        m_RayMarcherObjs.Remove(obj);
+        switch (opType)
+        {
+            case OperationType.NONE:
+                m_DefaultObjs.Remove(obj);
+                break;
+            case OperationType.BLEND:
+                m_BlendObjs.Remove(obj);
+                break;
+            default:
+                break;
+        }
     }
 }
