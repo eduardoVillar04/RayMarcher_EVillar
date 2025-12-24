@@ -5,17 +5,23 @@ public class RayMarcherObject : MonoBehaviour
 {
     [SerializeField] protected PrimitiveType type = PrimitiveType.SPHERE;
     [SerializeField] protected OperationType operationType = OperationType.NONE;
-    [SerializeField] protected Vector3 pos = Vector3.zero;
     [SerializeField] protected Vector3 size = Vector3.one;
 
     private void Awake()
     {
-        RayMarcherObjManager.Instance.AddObjToList(this);
+        if (RayMarcherObjManager.Instance == null)
+        {
+            Debug.LogError("RM Obj Manager not in scene. Make sure to add it before adding RM Objs");
+        }
+        else
+        {
+            RayMarcherObjManager.Instance.AddObjToList(this);
+        }
     }
 
     private void OnDisable()
     {
-        RayMarcherObjManager.Instance.RemoveObjFromList(this);
+        RayMarcherObjManager.Instance?.RemoveObjFromList(this);
     }
 
     private void OnDrawGizmos()
@@ -24,11 +30,11 @@ public class RayMarcherObject : MonoBehaviour
         {
             case PrimitiveType.SPHERE:
                 Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(pos, size.x);
+                Gizmos.DrawWireSphere(transform.position, size.x);
                 break;
             case PrimitiveType.BOX:
                 Gizmos.color = Color.blue;
-                Gizmos.DrawWireCube(pos, size*2);
+                Gizmos.DrawWireCube(transform.position, size*2);
                 break;
             default:
                 break;
