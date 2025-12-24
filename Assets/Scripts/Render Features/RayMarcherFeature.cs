@@ -24,7 +24,8 @@ public class RayMarcherFeature : ScriptableRendererFeature
         {
             m_RayMarchMat = mat;
 
-            Camera cam = Camera.main;
+            Camera cam = Camera.current;
+            if(cam == null) cam = Camera.main;
 
             float planeHeight = cam.nearClipPlane * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) * 2;
             float planeWidth = planeHeight * cam.aspect;
