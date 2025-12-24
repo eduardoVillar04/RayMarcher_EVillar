@@ -34,20 +34,27 @@ Shader "Custom/RayMarchShader"
 	            return 1.0 / (_ZBufferParams . z * z + _ZBufferParams . w);
             }
             
-            float SphereSDF(float3 p, float4 s)
+            float sdSphere(float3 p, float4 s)
             {
                 return length(p-s.xyz)-s.w;
             }
 
-            float GetDist(float3 p) 
+            float sdBox(float3 p, float3 halfSize, float3 pos)
             {
-                // For now render only a sphere
+                p -= pos;
+                float3 q = abs(p) - halfSize;
+                return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+            }
 
-	            float4 s = float4(0, 0, 0, 0.5); // w -> radius
+            float SDF(float3 p) 
+            {
+	            float4 s = float4(3, 0, 0, 0.5); // w -> radius
+                float3 bB= float3(0.5,0.5,0.5);
     
-                float sphereDist = SphereSDF(p, s);
+                float sphereDist = sdSphere(p, s);
+                float boxDist = sdBox(p, bB, float3(3,1,0));
     
-                return sphereDist;
+                return min(sphereDist, boxDist);
             }
 
             float RayMarch(float3 rO, float3 rD)
@@ -59,7 +66,7 @@ Shader "Custom/RayMarchShader"
                 for(int i=0; i<MAX_STEPS; i++) {
     	            p = rO + rD*dO;
         
-                    dS = GetDist(p);
+                    dS = SDF(p);
         
                     dO += dS;
                     if(dO>MAX_DIST || dS<SURF_DIST) break;
@@ -70,13 +77,13 @@ Shader "Custom/RayMarchShader"
 
             float3 GetNormal(float3 p) 
             {
-	            float d = GetDist(p);
+	            float d = SDF(p);
                 float2 e = float2(.01, 0);
     
                 float3 n = d - float3(
-                    GetDist(p-e.xyy),
-                    GetDist(p-e.yxy),
-                    GetDist(p-e.yyx));
+                    SDF(p-e.xyy),
+                    SDF(p-e.yxy),
+                    SDF(p-e.yyx));
     
                 return normalize(n);
             }
