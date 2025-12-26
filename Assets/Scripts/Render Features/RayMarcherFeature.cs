@@ -33,6 +33,7 @@ public class RayMarcherFeature : ScriptableRendererFeature
 
             m_RayMarchMat.SetVector("_ViewParams", new Vector3(planeWidth, planeHeight, cam.nearClipPlane));
             m_RayMarchMat.SetMatrix("_CamLocalToWorldMatrix", cam.transform.localToWorldMatrix);
+            RayMarcherObjManager.Instance?.SetShaderComputeBuffer(m_RayMarchMat);
 
             //The pass will read the current color texture. That needs to be an intermediate texture. It's not supported to use the BackBuffer as input texture. 
             //By setting this property, URP will automatically create an intermediate texture. 

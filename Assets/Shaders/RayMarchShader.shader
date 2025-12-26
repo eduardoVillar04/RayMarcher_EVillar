@@ -11,6 +11,17 @@ Shader "Custom/RayMarchShader"
         float4x4 _CamLocalToWorldMatrix; // cam.transform.localToWorldMatrix 
         float3 _ViewParams; // planeHeight, planeWidth, cam.nearClipPlane
 
+        struct RM_Obj
+        {
+            int primType;
+            int opType;
+            float3 pos;
+            float3 size;
+        };
+
+        StructuredBuffer<RM_Obj> _DefaultRMObjsBuffer; // Objs that will be rendered without any effects
+        int _DefaultRMObjsCount;
+
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl" // _CameraDepthTexture
@@ -46,16 +57,51 @@ Shader "Custom/RayMarchShader"
                 return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
             }
 
-            float SDF(float3 p) 
+            // float SDF(float3 p) 
+            // {
+	           //  float4 s = float4(3, 0, 0, 0.5); // w -> radius
+            //     float3 bB= float3(0.5,0.5,0.5);
+    
+            //     float sphereDist = sdSphere(p, s);
+            //     float boxDist = sdBox(p, bB, float3(3,1,0));
+    
+            //     return min(sphereDist, boxDist);
+            // }
+
+            float primitiveSDF(float3 p, RM_Obj obj)
             {
-	            float4 s = float4(3, 0, 0, 0.5); // w -> radius
-                float3 bB= float3(0.5,0.5,0.5);
-    
-                float sphereDist = sdSphere(p, s);
-                float boxDist = sdBox(p, bB, float3(3,1,0));
-    
-                return min(sphereDist, boxDist);
+                float d = 0;
+
+                switch(obj.primType)
+                {
+                    case 0: // SPHERE
+                        float4 s;
+                        s.xyz = obj.pos;
+                        s.w = obj.size.x;
+                        d = sdSphere(p, s);
+                        break;
+                    case 1: // BOX
+                        d = sdBox(p, obj.size, obj.pos);
+                        break;
+                }
+
+                return d;
             }
+            
+            float SDF(float3 p)
+            {
+                float minD = 9999999;
+
+                for(int i = 0; i < _DefaultRMObjsCount; i++)
+                {
+                    RM_Obj obj = _DefaultRMObjsBuffer[i];
+                    float d = primitiveSDF(p, obj);
+                    minD = min(minD, d);
+                }
+
+                return minD;
+            }
+
 
             float RayMarch(float3 rO, float3 rD)
             {

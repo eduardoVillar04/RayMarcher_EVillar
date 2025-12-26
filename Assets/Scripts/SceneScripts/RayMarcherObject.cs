@@ -1,9 +1,8 @@
 using UnityEngine;
 
-[ExecuteAlways]
 public class RayMarcherObject : MonoBehaviour
 {
-    public PrimitiveType type = PrimitiveType.SPHERE;
+    public PrimitiveType primType = PrimitiveType.SPHERE;
 
     // We need to update the list the obj is whenever the operation type changes
     [SerializeField] private OperationType _operationType;
@@ -21,24 +20,11 @@ public class RayMarcherObject : MonoBehaviour
         }
     }
 
-    // Control variable to update the obj in the manager when it changes through the menu
-    private OperationType lastOperationType;
-
     public Vector3 size = Vector3.one;
 
-    private void OnValidate()
-    {
-        // If the op type was changed in the inspector update the obj in the manager
-        if (lastOperationType != operationType)
-        {
-            RayMarcherObjManager.Instance.RemoveObjFromList(this, lastOperationType);
-            RayMarcherObjManager.Instance.AddObjToList(this, operationType);
-            lastOperationType = operationType;
-        }
-    }
+    public bool drawGizmos = true;
 
-
-    private void Awake()
+    private void Start()
     {
         if (RayMarcherObjManager.Instance == null)
         {
@@ -48,8 +34,6 @@ public class RayMarcherObject : MonoBehaviour
         {
             RayMarcherObjManager.Instance.AddObjToList(this, operationType);
         }
-
-        lastOperationType = operationType;
     }
 
     private void OnDisable()
@@ -59,7 +43,9 @@ public class RayMarcherObject : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        switch (type)
+        if (!drawGizmos) return;
+
+        switch (primType)
         {
             case PrimitiveType.SPHERE:
                 Gizmos.color = Color.red;
