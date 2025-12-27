@@ -3,6 +3,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.RenderGraphModule.Util;
+using System.Collections.Generic;
 
 public class RayMarcherFeature : ScriptableRendererFeature
 {    
@@ -30,10 +31,17 @@ public class RayMarcherFeature : ScriptableRendererFeature
             float planeHeight = cam.nearClipPlane * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) * 2;
             float planeWidth = planeHeight * cam.aspect;
 
+            List<RayMarcherObject> defaultObjs = RayMarcherObjManager.Instance?.m_DefaultObjs;
+            ComputeBuffer defaultBuffer = RayMarcherObjManager.Instance?.m_DefaultObjsBuffer;
+
+            List<RayMarcherObject> blendObjs = RayMarcherObjManager.Instance?.m_BlendObjs;
+            ComputeBuffer blendBuffer = RayMarcherObjManager.Instance?.m_BlendObjsBuffer;
 
             m_RayMarchMat.SetVector("_ViewParams", new Vector3(planeWidth, planeHeight, cam.nearClipPlane));
             m_RayMarchMat.SetMatrix("_CamLocalToWorldMatrix", cam.transform.localToWorldMatrix);
-            RayMarcherObjManager.Instance?.SetShaderComputeBuffer(m_RayMarchMat);
+
+            // Set compute buffers
+            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, defaultObjs, defaultBuffer, "_DefaultRMObjsBuffer", "_DefaultRMObjsCount");
 
             //The pass will read the current color texture. That needs to be an intermediate texture. It's not supported to use the BackBuffer as input texture. 
             //By setting this property, URP will automatically create an intermediate texture. 

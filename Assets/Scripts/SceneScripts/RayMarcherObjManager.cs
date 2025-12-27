@@ -7,10 +7,11 @@ public class RayMarcherObjManager : MonoBehaviour
 {
     public static RayMarcherObjManager Instance;
 
-    [SerializeField] private List<RayMarcherObject> m_DefaultObjs = new List<RayMarcherObject>();
-    [SerializeField] private List<RayMarcherObject> m_BlendObjs = new List<RayMarcherObject>();
+    public List<RayMarcherObject> m_DefaultObjs = new List<RayMarcherObject>();
+    public List<RayMarcherObject> m_BlendObjs = new List<RayMarcherObject>();
 
-    private ComputeBuffer m_DefaultObjsBuffer;
+    public ComputeBuffer m_DefaultObjsBuffer;
+    public ComputeBuffer m_BlendObjsBuffer;
 
     private void Awake()
     {
@@ -54,22 +55,22 @@ public class RayMarcherObjManager : MonoBehaviour
         }
     }
 
-    public void SetShaderComputeBuffer(Material rmMat)
+    public void SetRayMarcherShaderComputeBuffer(Material rmMat, List<RayMarcherObject> objs, ComputeBuffer buffer, string structuredBufferName, string intCountName)
     {
         // If there are no objects, update just the count
-        if (m_DefaultObjs.Count == 0)
+        if (objs.Count == 0)
         {
-            rmMat.SetInt("_DefaultRMObjsCount", 0);
+            rmMat.SetInt(intCountName, 0);
             return;
         }
 
-        var defaultObjsData = new RMObj[m_DefaultObjs.Count];
+        var defaultObjsData = new RMObj[objs.Count];
 
-        m_DefaultObjsBuffer?.Release();
+        buffer?.Release();
 
-        for (int i = 0; i < m_DefaultObjs.Count; i++)
+        for (int i = 0; i < objs.Count; i++)
         {
-            RayMarcherObject currentObj = m_DefaultObjs[i];
+            RayMarcherObject currentObj = objs[i];
             defaultObjsData[i] = new RMObj
             {
                 primType = (int)currentObj.primType,
@@ -79,11 +80,11 @@ public class RayMarcherObjManager : MonoBehaviour
             };
         }
 
-        m_DefaultObjsBuffer = new ComputeBuffer(m_DefaultObjs.Count, sizeof(int)*2 + sizeof(float)*6);
-        m_DefaultObjsBuffer.SetData(defaultObjsData);
+        buffer = new ComputeBuffer(objs.Count, sizeof(int) * 2 + sizeof(float) * 6);
+        buffer.SetData(defaultObjsData);
 
-        rmMat.SetBuffer("_DefaultRMObjsBuffer", m_DefaultObjsBuffer);
-        rmMat.SetInt("_DefaultRMObjsCount", m_DefaultObjs.Count);
+        rmMat.SetBuffer(structuredBufferName, buffer);
+        rmMat.SetInt(intCountName, objs.Count);
     }
 
     private void OnDestroy()
