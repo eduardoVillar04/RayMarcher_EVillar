@@ -1,9 +1,9 @@
 # Roadmap
-## Milestone 1 – Dec 17 to Dec 24 -> Completed 23/12/2023 with commit "Shader rays behave using unity main camera logic"
+## Milestone 1 – Dec 17 to Dec 24 -> Completed 23/12/2025 with commit "Shader rays behave using unity main camera logic"
 Build the foundation of the ray marcher and Custom Render Feature. 
 Ray marcher renders a single primitive on screen through a Custom Render Feature.
 
-## Milestone 2 – Dec 25 to Dec 31
+## Milestone 2 – Dec 25 to Dec 31 -> Completed 27/12/2025 with commit "RMManager send buffer with RMObjs params to shader for SDF evaluation"
 Allow scene interaction and ray marcher objects.
 Multiple objects can be added, moved, and rendered through the ray marcher interactively.
 
