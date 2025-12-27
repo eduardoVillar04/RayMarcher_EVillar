@@ -7,6 +7,9 @@ public class RayMarcherObjManager : MonoBehaviour
 {
     public static RayMarcherObjManager Instance;
 
+    [Header("Blend params")]
+    public float m_KValue = 1.0f;
+
     public List<RayMarcherObject> m_DefaultObjs = new List<RayMarcherObject>();
     public List<RayMarcherObject> m_BlendObjs = new List<RayMarcherObject>();
 
@@ -85,6 +88,11 @@ public class RayMarcherObjManager : MonoBehaviour
 
         rmMat.SetBuffer(structuredBufferName, buffer);
         rmMat.SetInt(intCountName, objs.Count);
+    }
+
+    public void SetExtraParameters(Material rmMat)
+    {
+        rmMat.SetFloat("_BlendKValue", m_KValue);
     }
 
     private void OnDestroy()

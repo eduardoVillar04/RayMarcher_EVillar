@@ -42,6 +42,9 @@ public class RayMarcherFeature : ScriptableRendererFeature
 
             // Set compute buffers
             RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, defaultObjs, defaultBuffer, "_DefaultRMObjsBuffer", "_DefaultRMObjsCount");
+            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, blendObjs, blendBuffer, "_BlendRMObjsBuffer", "_BlendRMObjsCount");
+
+            RayMarcherObjManager.Instance?.SetExtraParameters(m_RayMarchMat);
 
             //The pass will read the current color texture. That needs to be an intermediate texture. It's not supported to use the BackBuffer as input texture. 
             //By setting this property, URP will automatically create an intermediate texture. 

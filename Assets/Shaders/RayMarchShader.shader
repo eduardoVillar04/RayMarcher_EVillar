@@ -22,6 +22,12 @@ Shader "Custom/RayMarchShader"
         StructuredBuffer<RM_Obj> _DefaultRMObjsBuffer; // Objs that will be rendered without any effects
         int _DefaultRMObjsCount;
 
+        StructuredBuffer<RM_Obj> _BlendRMObjsBuffer; // Objs that will be blended together
+        int _BlendRMObjsCount;
+        float _BlendKValue;
+
+        int _PixelOpType; // Used to determine which SDF the GetLight method must use
+
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl" // _CameraDepthTexture
@@ -45,6 +51,7 @@ Shader "Custom/RayMarchShader"
 	            return 1.0 / (_ZBufferParams . z * z + _ZBufferParams . w);
             }
             
+            // SDFs for primitives
             float sdSphere(float3 p, float4 s)
             {
                 return length(p-s.xyz)-s.w;
@@ -56,17 +63,6 @@ Shader "Custom/RayMarchShader"
                 float3 q = abs(p) - halfSize;
                 return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
             }
-
-            // float SDF(float3 p) 
-            // {
-	           //  float4 s = float4(3, 0, 0, 0.5); // w -> radius
-            //     float3 bB= float3(0.5,0.5,0.5);
-    
-            //     float sphereDist = sdSphere(p, s);
-            //     float boxDist = sdBox(p, bB, float3(3,1,0));
-    
-            //     return min(sphereDist, boxDist);
-            // }
 
             float primitiveSDF(float3 p, RM_Obj obj)
             {
@@ -87,23 +83,52 @@ Shader "Custom/RayMarchShader"
 
                 return d;
             }
-            
-            float SDF(float3 p)
+
+            // Blending
+            float smoothMax(float a, float b, float k)
+            {
+                return log(exp(a*k)+exp(b*k))/k;
+            }
+
+            float smoothMin(float a, float b, float k)
+            {
+                return -smoothMax(-a,-b,k);
+            }
+
+
+
+            // SDF function that varies depending on operation type
+            float SDF(float3 p, int opType)
             {
                 float minD = 9999999;
+                float d;
 
-                for(int i = 0; i < _DefaultRMObjsCount; i++)
+                // Default rendering
+                if(opType == 0)
                 {
-                    RM_Obj obj = _DefaultRMObjsBuffer[i];
-                    float d = primitiveSDF(p, obj);
-                    minD = min(minD, d);
+                    for(int i = 0; i < _DefaultRMObjsCount; i++)
+                    {
+                        RM_Obj obj = _DefaultRMObjsBuffer[i];
+                        d = primitiveSDF(p, obj);
+                        minD = min(minD, d);
+                    }
                 }
+                else if(opType == 1) // Blending
+                {
+                    for(int i = 0; i < _BlendRMObjsCount; i++)
+                    {
+                        RM_Obj obj = _BlendRMObjsBuffer[i];
+                        d = primitiveSDF(p, obj);
+                        minD = smoothMin(minD, d, _BlendKValue);
+                    }
+                }
+
 
                 return minD;
             }
 
 
-            float RayMarch(float3 rO, float3 rD)
+            float RayMarch(float3 rO, float3 rD, int opType)
             {
                 float dO = 0;
                 float dS = 0;
@@ -112,7 +137,7 @@ Shader "Custom/RayMarchShader"
                 for(int i=0; i<MAX_STEPS; i++) {
     	            p = rO + rD*dO;
         
-                    dS = SDF(p);
+                    dS = SDF(p, opType);
         
                     dO += dS;
                     if(dO>MAX_DIST || dS<SURF_DIST) break;
@@ -121,28 +146,28 @@ Shader "Custom/RayMarchShader"
                 return dO;
             }
 
-            float3 GetNormal(float3 p) 
+            float3 GetNormal(float3 p, int opType) 
             {
-	            float d = SDF(p);
+	            float d = SDF(p, opType);
                 float2 e = float2(.01, 0);
     
                 float3 n = d - float3(
-                    SDF(p-e.xyy),
-                    SDF(p-e.yxy),
-                    SDF(p-e.yyx));
+                    SDF(p-e.xyy, opType),
+                    SDF(p-e.yxy, opType),
+                    SDF(p-e.yyx, opType));
     
                 return normalize(n);
             }
 
-            float GetLight(float3 p) 
+            float GetLight(float3 p, int opType) 
             {
                 float3 lightPos = float3(0, 5, 0);
 
                 float3 l = normalize(lightPos-p);
-                float3 n = GetNormal(p);
+                float3 n = GetNormal(p, opType);
     
                 float dif = clamp(dot(n, l), 0, 1);
-                float d = RayMarch(p+n*SURF_DIST*2., l);
+                float d = RayMarch(p+n*SURF_DIST*2., l, opType);
                 if(d<length(lightPos-p)) dif *= .1;
     
                 return dif;
@@ -176,17 +201,35 @@ Shader "Custom/RayMarchShader"
 
                 float3 rD = normalize(viewPoint - camPos);
 
-                float rayMarchDist = RayMarch(camPos, rD);
-                
-                float3 p = camPos + rD * rayMarchDist;
+                float minDist = 9999999;
+
+                float dista = RayMarch(camPos, rD, 0);
+                dista /= 25;
+                float4 col;
+                col.xyz = dista;
+                // return col;
+
+                float d;
+                //compare px distances from all effects and get the smallest one (depth check)
+                for(int i = 0; i < 2; i++)
+                {
+                    d = RayMarch(camPos, rD, i);
+                    if(d < minDist)
+                    {
+                        _PixelOpType = i;
+                        minDist = d;
+                    }
+                }
+
+                float3 p = camPos + rD * minDist;
                 
                 CheckForDepth(p, input.texcoord);
 
                 //Ignore far away or occluded points
-                if(rayMarchDist >= MAX_DIST) discard;
+                if(minDist >= MAX_DIST) discard;
 
 
-                float dif = GetLight(p);
+                float dif = GetLight(p, _PixelOpType); //TODO change hardcoded value
                 color = float4(dif, dif, dif, 1);
                 return color;
             }
