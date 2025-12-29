@@ -7,7 +7,7 @@ Ray marcher renders a single primitive on screen through a Custom Render Feature
 Allow scene interaction and ray marcher objects.
 Multiple objects can be added, moved, and rendered through the ray marcher interactively.
 
-##Milestone 3 – Jan 1 to Jan 4 -> Completed 29/12/2023 with commits "Added basic depth-based occlusion to ray marching shader" (24/12/25) and "Implemented smooth subtraction and intersection" (29/12/25) 
+## Milestone 3 – Jan 1 to Jan 4 -> Completed 29/12/2023 with commits "Added basic depth-based occlusion to ray marching shader" (24/12/25) and "Implemented smooth subtraction and intersection" (29/12/25) 
 Integrate ray marcher with Unity geometry and depth buffer.
 Ray-marched objects appear correctly behind Unity meshes and do not render over them incorrectly.
 
