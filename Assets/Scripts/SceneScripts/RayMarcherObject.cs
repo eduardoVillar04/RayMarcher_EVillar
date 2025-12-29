@@ -71,5 +71,7 @@ public enum PrimitiveType
 public enum OperationType
 {
     NONE = -1,
-    BLEND
+    SMOOTH_UNION,
+    SMOOTH_SUBTRACTION,
+    SMOOTH_INTERSECTION
 }

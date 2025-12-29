@@ -19,12 +19,27 @@ Shader "Custom/RayMarchShader"
             float3 size;
         };
 
+        // Default objs
         StructuredBuffer<RM_Obj> _DefaultRMObjsBuffer; // Objs that will be rendered without any effects
         int _DefaultRMObjsCount;
 
-        StructuredBuffer<RM_Obj> _BlendRMObjsBuffer; // Objs that will be blended together
-        int _BlendRMObjsCount;
-        float _BlendKValue;
+        // Smooth objs
+        float _SmoothKValue;
+
+        // Smooth union
+        // These objs will be blended together
+        StructuredBuffer<RM_Obj> _SmoothUnionObjsBuffer; 
+        int _SmoothUnionObjsCount;
+
+        // Smooth subtraction
+        // These objs will smoothly subtract from the volume of smooth union objs
+        StructuredBuffer<RM_Obj> _SmoothSubtractionObjsBuffer; 
+        int _SmoothSubtractionObjsCount;
+
+        // Smooth intersection
+        // Only the intersecting volume of these objs when colliding with another of the same type will be rendered
+        StructuredBuffer<RM_Obj> _SmoothIntersectionObjsBuffer; 
+        int _SmoothIntersectionObjsCount;
 
         int _PixelOpType; // Used to determine which SDF the GetLight method must use
 
@@ -96,12 +111,13 @@ Shader "Custom/RayMarchShader"
             }
 
 
-
             // SDF function that varies depending on operation type
             float SDF(float3 p, int opType)
             {
                 float minD = 9999999;
                 float d;
+
+                // p = frac(p / 5) * 5; //espacio plegado en casilla 5x5
 
                 // Default rendering
                 if(opType == 0)
@@ -113,13 +129,13 @@ Shader "Custom/RayMarchShader"
                         minD = min(minD, d);
                     }
                 }
-                else if(opType == 1) // Blending
+                else if(opType == 1) // Union blending
                 {
-                    for(int i = 0; i < _BlendRMObjsCount; i++)
+                    for(int i = 0; i < _SmoothUnionObjsCount; i++)
                     {
-                        RM_Obj obj = _BlendRMObjsBuffer[i];
+                        RM_Obj obj = _SmoothUnionObjsBuffer[i];
                         d = primitiveSDF(p, obj);
-                        minD = smoothMin(minD, d, _BlendKValue);
+                        minD = smoothMin(minD, d, _SmoothKValue);
                     }
                 }
 
@@ -203,12 +219,6 @@ Shader "Custom/RayMarchShader"
 
                 float minDist = 9999999;
 
-                float dista = RayMarch(camPos, rD, 0);
-                dista /= 25;
-                float4 col;
-                col.xyz = dista;
-                // return col;
-
                 float d;
                 //compare px distances from all effects and get the smallest one (depth check)
                 for(int i = 0; i < 2; i++)
@@ -229,7 +239,7 @@ Shader "Custom/RayMarchShader"
                 if(minDist >= MAX_DIST) discard;
 
 
-                float dif = GetLight(p, _PixelOpType); //TODO change hardcoded value
+                float dif = GetLight(p, _PixelOpType);
                 color = float4(dif, dif, dif, 1);
                 return color;
             }

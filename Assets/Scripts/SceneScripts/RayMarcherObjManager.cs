@@ -11,10 +11,14 @@ public class RayMarcherObjManager : MonoBehaviour
     public float m_KValue = 1.0f;
 
     public List<RayMarcherObject> m_DefaultObjs = new List<RayMarcherObject>();
-    public List<RayMarcherObject> m_BlendObjs = new List<RayMarcherObject>();
+    public List<RayMarcherObject> m_SmoothUnionObjs = new List<RayMarcherObject>();
+    public List<RayMarcherObject> m_SmoothSubtractionObjs = new List<RayMarcherObject>();
+    public List<RayMarcherObject> m_SmoothIntersectionObjs = new List<RayMarcherObject>();
 
     public ComputeBuffer m_DefaultObjsBuffer;
-    public ComputeBuffer m_BlendObjsBuffer;
+    public ComputeBuffer m_SmoothUnionObjsBuffer;
+    public ComputeBuffer m_SmoothSubtractionObjsBuffer;
+    public ComputeBuffer m_SmoothIntersectionObjsBuffer;
 
     private void Awake()
     {
@@ -35,8 +39,14 @@ public class RayMarcherObjManager : MonoBehaviour
             case OperationType.NONE:
                 m_DefaultObjs.Add(obj);
                 break;
-            case OperationType.BLEND:
-                m_BlendObjs.Add(obj);
+            case OperationType.SMOOTH_UNION:
+                m_SmoothUnionObjs.Add(obj);
+                break;
+            case OperationType.SMOOTH_SUBTRACTION:
+                m_SmoothSubtractionObjs.Add(obj);
+                break;
+            case OperationType.SMOOTH_INTERSECTION:
+                m_SmoothSubtractionObjs.Add(obj);
                 break;
             default:
                 break;
@@ -50,8 +60,14 @@ public class RayMarcherObjManager : MonoBehaviour
             case OperationType.NONE:
                 m_DefaultObjs.Remove(obj);
                 break;
-            case OperationType.BLEND:
-                m_BlendObjs.Remove(obj);
+            case OperationType.SMOOTH_UNION:
+                m_SmoothUnionObjs.Remove(obj);
+                break;
+            case OperationType.SMOOTH_SUBTRACTION:
+                m_SmoothSubtractionObjs.Remove(obj);
+                break;
+            case OperationType.SMOOTH_INTERSECTION:
+                m_SmoothIntersectionObjs.Remove(obj);
                 break;
             default:
                 break;
@@ -92,7 +108,7 @@ public class RayMarcherObjManager : MonoBehaviour
 
     public void SetExtraParameters(Material rmMat)
     {
-        rmMat.SetFloat("_BlendKValue", m_KValue);
+        rmMat.SetFloat("_SmoothKValue", m_KValue);
     }
 
     private void OnDestroy()

@@ -34,15 +34,17 @@ public class RayMarcherFeature : ScriptableRendererFeature
             List<RayMarcherObject> defaultObjs = RayMarcherObjManager.Instance?.m_DefaultObjs;
             ComputeBuffer defaultBuffer = RayMarcherObjManager.Instance?.m_DefaultObjsBuffer;
 
-            List<RayMarcherObject> blendObjs = RayMarcherObjManager.Instance?.m_BlendObjs;
-            ComputeBuffer blendBuffer = RayMarcherObjManager.Instance?.m_BlendObjsBuffer;
+            List<RayMarcherObject> blendObjs = RayMarcherObjManager.Instance?.m_SmoothUnionObjs;
+            ComputeBuffer blendBuffer = RayMarcherObjManager.Instance?.m_SmoothSubtractionObjsBuffer;
 
             m_RayMarchMat.SetVector("_ViewParams", new Vector3(planeWidth, planeHeight, cam.nearClipPlane));
             m_RayMarchMat.SetMatrix("_CamLocalToWorldMatrix", cam.transform.localToWorldMatrix);
 
             // Set compute buffers
             RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, defaultObjs, defaultBuffer, "_DefaultRMObjsBuffer", "_DefaultRMObjsCount");
-            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, blendObjs, blendBuffer, "_BlendRMObjsBuffer", "_BlendRMObjsCount");
+            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, blendObjs, blendBuffer, "_SmoothUnionObjsBuffer", "_SmoothUnionObjsCount");
+            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, blendObjs, blendBuffer, "_SmoothSubtractionObjsBuffer", "_SmoothSubtractionObjsCount");
+            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, blendObjs, blendBuffer, "_SmoothIntersectionObjsBuffer", "_SmoothIntersectionObjsCount");
 
             RayMarcherObjManager.Instance?.SetExtraParameters(m_RayMarchMat);
 
