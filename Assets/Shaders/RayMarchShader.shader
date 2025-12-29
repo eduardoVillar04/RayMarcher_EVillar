@@ -113,12 +113,13 @@ Shader "Custom/RayMarchShader"
             float SDF(float3 p)
             {
                 float d;
+                int i = 0;
 
                 // p = frac(p / 5) * 5; //espacio plegado en casilla 5x5
 
                 // Default rendering
-                float minDefault = 9999999;
-                for(int i = 0; i < _DefaultRMObjsCount; i++)
+                float minDefault = MAX_DIST;
+                for(i = 0; i < _DefaultRMObjsCount; i++)
                 {
                     RM_Obj obj = _DefaultRMObjsBuffer[i];
                     d = primitiveSDF(p, obj);
@@ -126,8 +127,8 @@ Shader "Custom/RayMarchShader"
                 }
 
                 // Smooth union
-                float minSUnion = 9999999;
-                for(int i = 0; i < _SmoothUnionObjsCount; i++)
+                float minSUnion = MAX_DIST;
+                for(i = 0; i < _SmoothUnionObjsCount; i++)
                 {
                     RM_Obj obj = _SmoothUnionObjsBuffer[i];
                     d = primitiveSDF(p, obj);
@@ -136,7 +137,7 @@ Shader "Custom/RayMarchShader"
                 
                 // Smooth subtraction
                 // Applied on top of the sUnion distance
-                for(int i = 0; i < _SmoothSubtractionObjsCount; i++)
+                for(i = 0; i < _SmoothSubtractionObjsCount; i++)
                 {
                     RM_Obj obj = _SmoothSubtractionObjsBuffer[i];
                     d = primitiveSDF(p, obj);
@@ -144,18 +145,18 @@ Shader "Custom/RayMarchShader"
                 }
 
                 // Smooth intersection
-                float minSIntersection = -9999999;
-                for(int i = 0; i < _SmoothIntersectionObjsCount; i++)
+                float minSIntersection = MAX_DIST;
+                for(i = 0; i < _SmoothIntersectionObjsCount; i++)
                 {
                     RM_Obj obj = _SmoothIntersectionObjsBuffer[i];
                     d = primitiveSDF(p, obj);
+                    if(i == 0) minSIntersection = d;
                     minSIntersection = smoothMax(minSIntersection, d, _SmoothKValue);
                 }
                 
                 // The minimum distance will be the closest to the camera, the one with least depth
                 float minDist = min(minDefault, minSUnion);
                 minDist = min(minDist, minSIntersection);
-
                 return minDist;
             }
 
