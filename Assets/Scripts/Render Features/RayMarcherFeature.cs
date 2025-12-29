@@ -34,17 +34,24 @@ public class RayMarcherFeature : ScriptableRendererFeature
             List<RayMarcherObject> defaultObjs = RayMarcherObjManager.Instance?.m_DefaultObjs;
             ComputeBuffer defaultBuffer = RayMarcherObjManager.Instance?.m_DefaultObjsBuffer;
 
-            List<RayMarcherObject> blendObjs = RayMarcherObjManager.Instance?.m_SmoothUnionObjs;
-            ComputeBuffer blendBuffer = RayMarcherObjManager.Instance?.m_SmoothSubtractionObjsBuffer;
+            List<RayMarcherObject> smoothUnionObjs = RayMarcherObjManager.Instance?.m_SmoothUnionObjs;
+            ComputeBuffer smoothUnionBuffer = RayMarcherObjManager.Instance?.m_SmoothUnionObjsBuffer;
+
+            List<RayMarcherObject> smoothSubtractionObjs = RayMarcherObjManager.Instance?.m_SmoothSubtractionObjs;
+            ComputeBuffer smoothSubtractionBuffer = RayMarcherObjManager.Instance?.m_SmoothSubtractionObjsBuffer;
+
+            List<RayMarcherObject> smoothIntersectionObjs = RayMarcherObjManager.Instance?.m_SmoothIntersectionObjs;
+            ComputeBuffer smoothIntersectionBuffer= RayMarcherObjManager.Instance?.m_SmoothIntersectionObjsBuffer;
+
 
             m_RayMarchMat.SetVector("_ViewParams", new Vector3(planeWidth, planeHeight, cam.nearClipPlane));
             m_RayMarchMat.SetMatrix("_CamLocalToWorldMatrix", cam.transform.localToWorldMatrix);
 
             // Set compute buffers
             RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, defaultObjs, defaultBuffer, "_DefaultRMObjsBuffer", "_DefaultRMObjsCount");
-            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, blendObjs, blendBuffer, "_SmoothUnionObjsBuffer", "_SmoothUnionObjsCount");
-            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, blendObjs, blendBuffer, "_SmoothSubtractionObjsBuffer", "_SmoothSubtractionObjsCount");
-            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, blendObjs, blendBuffer, "_SmoothIntersectionObjsBuffer", "_SmoothIntersectionObjsCount");
+            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, smoothUnionObjs, smoothUnionBuffer, "_SmoothUnionObjsBuffer", "_SmoothUnionObjsCount");
+            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, smoothSubtractionObjs, smoothSubtractionBuffer, "_SmoothSubtractionObjsBuffer", "_SmoothSubtractionObjsCount");
+            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, smoothIntersectionObjs, smoothIntersectionBuffer, "_SmoothIntersectionObjsBuffer", "_SmoothIntersectionObjsCount");
 
             RayMarcherObjManager.Instance?.SetExtraParameters(m_RayMarchMat);
 

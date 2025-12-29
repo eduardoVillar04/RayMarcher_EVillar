@@ -46,7 +46,7 @@ public class RayMarcherObjManager : MonoBehaviour
                 m_SmoothSubtractionObjs.Add(obj);
                 break;
             case OperationType.SMOOTH_INTERSECTION:
-                m_SmoothSubtractionObjs.Add(obj);
+                m_SmoothIntersectionObjs.Add(obj);
                 break;
             default:
                 break;
@@ -114,6 +114,10 @@ public class RayMarcherObjManager : MonoBehaviour
     private void OnDestroy()
     {
         m_DefaultObjsBuffer?.Release();
+        m_SmoothUnionObjsBuffer?.Release();
+        m_SmoothSubtractionObjsBuffer?.Release();
+        m_SmoothIntersectionObjsBuffer?.Release();
+
         Instance = null;
     }
 
