@@ -18,7 +18,7 @@
 Bonus Features (Fractals, Blending, Clouds)
 - Blending -> Completed 29/12/25 with commit "Implemented smooth subtraction and intersection"
 - Fractals 
-  - Infinite spheres
+  - Infinite spheres -> Completed 31/12/25 with commit "Add configurable repetition cell to ray marcher"
   - Merger Sponge
 - Volumetric clouds
 
