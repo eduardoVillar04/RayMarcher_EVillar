@@ -292,7 +292,7 @@ Shader "Custom/RayMarchShader"
 
             float GetLight(float3 p) 
             {
-                float3 lightPos = float3(15,15,15);
+                float3 lightPos = float3(100,100,100);
 
                 if(_RepetitionActive)
                 {

@@ -45,6 +45,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RayMarcherObject
   primType: 2
-  _operationType: 0
+  _operationType: -1
   size: {x: 10, y: 5, z: 1}
   drawGizmos: 1
