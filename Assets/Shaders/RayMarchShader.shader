@@ -77,7 +77,7 @@ Shader "Custom/RayMarchShader"
                 return length(p-s.xyz)-s.w;
             }
 
-            float sdBox(float3 p, float3 halfSize, float3 pos)
+            float sdCube(float3 p, float3 halfSize, float3 pos)
             {
                 p -= pos;
                 float3 q = abs(p) - halfSize;
@@ -105,23 +105,27 @@ Shader "Custom/RayMarchShader"
 
             float sdMengerSponge(float3 p, float cubeWidth, int numIterations, float3 pos)
             {
-                // base cube
-                float d = sdBox(p, cubeWidth * 0.5, pos);
+                float3 localP = p - pos;
+
+                // Base cube
+                float d = sdCube(localP, cubeWidth * 0.5, float3(0,0,0));
 
                 float scale = 1.0;
 
                 for (int i = 0; i < numIterations; i++)
                 {
-                    // scale space
-                    float3 q = p * scale;
+                    // Scale space for subdivisions
+                    float3 q = localP * scale;
 
-                    // domain repetition centered
-                    float3 cellId = round(q / cubeWidth);
-                    q = q - cellId * cubeWidth;
+                    // Centered domain repetition
+                    float3 cellIndex = round(q / cubeWidth);
+                    q = q - cellIndex * cubeWidth;
 
-                    // cross
-                    float crossDist = sdCross(q, cubeWidth / 6.0, pos);
+                    // Cross is always in the center of the cell
+                    // cross width is 3 times smaller than the cube, so halfwidth = cubeWidth/6
+                    float crossDist = sdCross(q, cubeWidth / 6.0, float3(0,0,0));
 
+                    // return the crossDist to world space dividing by the scale
                     d = max(d, -crossDist / scale);
 
                     scale *= 3.0;
@@ -143,7 +147,10 @@ Shader "Custom/RayMarchShader"
                         d = sdSphere(p, s);
                         break;
                     case 1: // BOX
-                        d = sdBox(p, obj.size, obj.pos);
+                        d = sdCube(p, obj.size, obj.pos);
+                        break;
+                    case 2: // MENGER_SPONGE
+                        d = sdMengerSponge(p, obj.size.x, obj.size.y, obj.pos);
                         break;
                 }
 
@@ -166,9 +173,6 @@ Shader "Custom/RayMarchShader"
             {
                 float d;
                 int i = 0;
-
-                float3 pos = float3(0,0,0);
-                return sdMengerSponge(p, 100, 10, pos);
 
                 // Default rendering
                 float minDefault = MAX_DIST;
