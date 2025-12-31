@@ -5,7 +5,7 @@ Shader "Custom/RayMarchShader"
     {
         HLSLINCLUDE
         #define MAX_STEPS 100
-        #define MAX_DIST 100
+        #define MAX_DIST 200
         #define SURF_DIST 0.01
 
         float4x4 _CamLocalToWorldMatrix; // cam.transform.localToWorldMatrix 
@@ -84,6 +84,52 @@ Shader "Custom/RayMarchShader"
                 return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
             }
 
+            float sdCross(float3 p, float halfWidth, float3 pos) 
+            {
+                p -= pos;
+                const float3 corner = float3(halfWidth, halfWidth, halfWidth);
+                float3 foldedPos = abs(p);
+
+                float3 ctp = foldedPos - corner;
+
+                float minComp = min(min(ctp.x, ctp.y), ctp.z);
+                float maxComp = max(max(ctp.x, ctp.y), ctp.z);
+    
+                float midComp = ctp.x + ctp.y + ctp.z - minComp - maxComp;
+    
+                float2 closestOutsidePoint = max(float2(minComp, midComp), 0.0);
+                float2 closestInsidePoint = min(float2(midComp, maxComp), 0.0);
+    
+                return length(closestOutsidePoint) + -length(closestInsidePoint);
+            }
+
+            float sdMengerSponge(float3 p, float cubeWidth, int numIterations, float3 pos)
+            {
+                // base cube
+                float d = sdBox(p, cubeWidth * 0.5, pos);
+
+                float scale = 1.0;
+
+                for (int i = 0; i < numIterations; i++)
+                {
+                    // scale space
+                    float3 q = p * scale;
+
+                    // domain repetition centered
+                    float3 cellId = round(q / cubeWidth);
+                    q = q - cellId * cubeWidth;
+
+                    // cross
+                    float crossDist = sdCross(q, cubeWidth / 6.0, pos);
+
+                    d = max(d, -crossDist / scale);
+
+                    scale *= 3.0;
+                }
+
+                return d;
+            }
+
             float primitiveSDF(float3 p, RM_Obj obj)
             {
                 float d = 0;
@@ -121,7 +167,8 @@ Shader "Custom/RayMarchShader"
                 float d;
                 int i = 0;
 
-                // p = repeated(p);
+                float3 pos = float3(0,0,0);
+                return sdMengerSponge(p, 100, 10, pos);
 
                 // Default rendering
                 float minDefault = MAX_DIST;
@@ -241,7 +288,7 @@ Shader "Custom/RayMarchShader"
 
             float GetLight(float3 p) 
             {
-                float3 lightPos = float3(2.5, 4, 2.5);
+                float3 lightPos = float3(15,15,15);
 
                 if(_RepetitionActive)
                 {
