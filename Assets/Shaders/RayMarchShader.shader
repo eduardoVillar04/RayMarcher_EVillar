@@ -108,14 +108,13 @@ Shader "Custom/RayMarchShader"
                 return -smoothMax(-a,-b,k);
             }
 
-
             // SDF function that varies depending on operation type
-            float SDF(float3 p)
+            float BaseSDF(float3 p)
             {
                 float d;
                 int i = 0;
 
-                // p = frac(p / 5) * 5; //espacio plegado en casilla 5x5
+                // p = repeated(p);
 
                 // Default rendering
                 float minDefault = MAX_DIST;
@@ -160,6 +159,43 @@ Shader "Custom/RayMarchShader"
                 return minDist;
             }
 
+            float3 RepeatedSDF(float3 p)
+            {
+                float3 cell = float3(5,5,20);
+                
+                float3 id = round(p / cell);
+                float3 o = sign(p - cell * id);
+
+                float d = 1e20;
+
+                for (int z = 0; z < 2; z++)
+                for (int y = 0; y < 2; y++)
+                for (int x = 0; x < 2; x++)
+                {
+                    float3 rid = id + float3(x,y,z) * o;
+                    float3 r = p - cell * rid;
+
+                    d = min(d, BaseSDF(r));
+                }
+
+                return d;
+            }
+
+            float SDF(float3 p)
+            {
+                float3 d = MAX_DIST;
+
+                if(0)
+                {
+                    d = BaseSDF(p);
+                }
+                else
+                {
+                    d = RepeatedSDF(p);
+                }
+
+                return d;
+            }
 
             float RayMarch(float3 rO, float3 rD)
             {
@@ -192,9 +228,21 @@ Shader "Custom/RayMarchShader"
                 return normalize(n);
             }
 
+            float3 RepeatRelative(float3 pos, float3 ref)
+            {
+                float3 cell = float3(5,5,5);
+                float3 id = floor(ref / cell); // cell pos in cell space
+                return cell * id + pos;
+            }
+
             float GetLight(float3 p) 
             {
-                float3 lightPos = float3(0, 5, 0);
+                float3 lightPos = float3(2.5, 4, 2.5);
+
+                if(1)
+                {
+                    lightPos = RepeatRelative(lightPos, p);
+                }
 
                 float3 l = normalize(lightPos-p);
                 float3 n = GetNormal(p);
