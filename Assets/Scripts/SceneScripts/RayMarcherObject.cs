@@ -53,7 +53,11 @@ public class RayMarcherObject : MonoBehaviour
                 break;
             case PrimitiveType.BOX:
                 Gizmos.color = Color.blue;
-                Gizmos.DrawWireCube(transform.position, size*2);
+                Gizmos.DrawWireCube(transform.position, size * 2);
+                break;
+            case PrimitiveType.MENGER_SPONGE:
+                Gizmos.color = Color.purple;
+                Gizmos.DrawWireCube(transform.position, Vector3.one * size.x);
                 break;
             default:
                 break;
@@ -65,7 +69,8 @@ public enum PrimitiveType
 {
     NONE = -1,
     SPHERE,
-    BOX
+    BOX,
+    MENGER_SPONGE
 }
 
 public enum OperationType
