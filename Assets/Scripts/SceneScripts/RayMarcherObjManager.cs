@@ -10,6 +10,11 @@ public class RayMarcherObjManager : MonoBehaviour
     [Header("Blend params")]
     public float m_KValue = 1.0f;
 
+    [Header("Repetition cell")]
+    public bool m_RepetitionActive = false;
+    public Vector3 _RepetitionCellSize = Vector3.one;
+
+    [Header("Lists")]
     public List<RayMarcherObject> m_DefaultObjs = new List<RayMarcherObject>();
     public List<RayMarcherObject> m_SmoothUnionObjs = new List<RayMarcherObject>();
     public List<RayMarcherObject> m_SmoothSubtractionObjs = new List<RayMarcherObject>();
@@ -109,6 +114,8 @@ public class RayMarcherObjManager : MonoBehaviour
     public void SetExtraParameters(Material rmMat)
     {
         rmMat.SetFloat("_SmoothKValue", m_KValue);
+        rmMat.SetInt("_RepetitionActive", m_RepetitionActive == true ? 1 : 0);
+        rmMat.SetVector("_RepetitionCellSize", _RepetitionCellSize);
     }
 
     private void OnDestroy()

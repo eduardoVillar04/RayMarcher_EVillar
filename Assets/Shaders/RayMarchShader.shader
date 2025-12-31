@@ -19,16 +19,19 @@ Shader "Custom/RayMarchShader"
             float3 size;
         };
 
-        // Default objs
-        StructuredBuffer<RM_Obj> _DefaultRMObjsBuffer; // Objs that will be rendered without any effects
+        // --------------------------------------------------------------------------- OBJ BUFFERS ---------------------------------------------------------------------------
+        // [Default objs]
+        // Objs that will be rendered without any effects
+        StructuredBuffer<RM_Obj> _DefaultRMObjsBuffer; 
         int _DefaultRMObjsCount;
 
-        // Smooth objs
+
+        // [Smooth objs]
         float _SmoothKValue;
 
         // Smooth union
         // These objs will be blended together
-        StructuredBuffer<RM_Obj> _SmoothUnionObjsBuffer; 
+        StructuredBuffer<RM_Obj> _SmoothUnionObjsBuffer;  
         int _SmoothUnionObjsCount;
 
         // Smooth subtraction
@@ -40,6 +43,10 @@ Shader "Custom/RayMarchShader"
         // Only the intersecting volume of these objs when colliding with another of the same type will be rendered
         StructuredBuffer<RM_Obj> _SmoothIntersectionObjsBuffer; 
         int _SmoothIntersectionObjsCount;
+
+        // --------------------------------------------------------------------------- CELL REPETITION ---------------------------------------------------------------------------
+        bool _RepetitionActive;
+        float3 _RepetitionCellSize;
 
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
@@ -161,10 +168,8 @@ Shader "Custom/RayMarchShader"
 
             float3 RepeatedSDF(float3 p)
             {
-                float3 cell = float3(5,5,20);
-                
-                float3 id = round(p / cell);
-                float3 o = sign(p - cell * id);
+                float3 id = round(p / _RepetitionCellSize);
+                float3 o = sign(p - _RepetitionCellSize * id);
 
                 float d = 1e20;
 
@@ -173,7 +178,7 @@ Shader "Custom/RayMarchShader"
                 for (int x = 0; x < 2; x++)
                 {
                     float3 rid = id + float3(x,y,z) * o;
-                    float3 r = p - cell * rid;
+                    float3 r = p - _RepetitionCellSize * rid;
 
                     d = min(d, BaseSDF(r));
                 }
@@ -185,13 +190,13 @@ Shader "Custom/RayMarchShader"
             {
                 float3 d = MAX_DIST;
 
-                if(0)
+                if(_RepetitionActive)
                 {
-                    d = BaseSDF(p);
+                    d = RepeatedSDF(p);
                 }
                 else
                 {
-                    d = RepeatedSDF(p);
+                    d = BaseSDF(p);
                 }
 
                 return d;
@@ -230,16 +235,15 @@ Shader "Custom/RayMarchShader"
 
             float3 RepeatRelative(float3 pos, float3 ref)
             {
-                float3 cell = float3(5,5,5);
-                float3 id = floor(ref / cell); // cell pos in cell space
-                return cell * id + pos;
+                float3 id = floor(ref / _RepetitionCellSize); // cell pos in cell space
+                return _RepetitionCellSize * id + pos;
             }
 
             float GetLight(float3 p) 
             {
                 float3 lightPos = float3(2.5, 4, 2.5);
 
-                if(1)
+                if(_RepetitionActive)
                 {
                     lightPos = RepeatRelative(lightPos, p);
                 }

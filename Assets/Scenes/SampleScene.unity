@@ -264,6 +264,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
+      propertyPath: m_KValue
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
+      propertyPath: _RepetitionCellSize.x
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
+      propertyPath: _RepetitionCellSize.y
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
+      propertyPath: _RepetitionCellSize.z
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 3635373198214138028, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.9757648
@@ -327,7 +343,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 976021346975739170, guid: 0244c55c271a52e4790ebf47d4e3d286, type: 3}
       propertyPath: _operationType
-      value: 0
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 1696784172380640726, guid: 0244c55c271a52e4790ebf47d4e3d286, type: 3}
       propertyPath: m_LocalPosition.x
