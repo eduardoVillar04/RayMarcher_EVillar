@@ -13,6 +13,8 @@ public class RayMarcherFeature : ScriptableRendererFeature
     [Tooltip("The event where to inject the pass.")]
     public RenderPassEvent injectionPoint = RenderPassEvent.AfterRenderingPostProcessing;
 
+    public Texture3D cloudText3D;
+
     public class RayMarcherPass : ScriptableRenderPass
     {
         const string m_PassName = "RayMarcherPass";
@@ -21,7 +23,7 @@ public class RayMarcherFeature : ScriptableRendererFeature
         Material m_RayMarchMat;
 
         // Function used to transfer the material from the renderer feature to the render pass.
-        public void Setup(Material mat)
+        public void Setup(Material mat, Texture3D cloudTex)
         {
             m_RayMarchMat = mat;
 
@@ -54,6 +56,9 @@ public class RayMarcherFeature : ScriptableRendererFeature
             RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, smoothIntersectionObjs, smoothIntersectionBuffer, "_SmoothIntersectionObjsBuffer", "_SmoothIntersectionObjsCount");
 
             RayMarcherObjManager.Instance?.SetExtraParameters(m_RayMarchMat);
+
+            //Set cloud texture
+            m_RayMarchMat.SetTexture("_CloudTex", cloudTex);
 
             //The pass will read the current color texture. That needs to be an intermediate texture. It's not supported to use the BackBuffer as input texture. 
             //By setting this property, URP will automatically create an intermediate texture. 
@@ -118,7 +123,7 @@ public class RayMarcherFeature : ScriptableRendererFeature
             return;
         }
 
-        m_Pass.Setup(material);
+        m_Pass.Setup(material, cloudText3D);
         renderer.EnqueuePass(m_Pass);        
     }
 }
