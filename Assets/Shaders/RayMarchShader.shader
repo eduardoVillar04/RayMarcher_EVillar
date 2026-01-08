@@ -311,7 +311,7 @@ Shader "Custom/RayMarchShader"
                 return dif;
             }
 
-            void CheckForDepth(float3 p, float2 uv)
+            bool CheckForDepth(float3 p, float2 uv)
             {
                 // Hit pos from WS -> VS
                 float3 pView = mul(UNITY_MATRIX_V, float4(p, 1)).xyz;
@@ -323,7 +323,8 @@ Shader "Custom/RayMarchShader"
                 // Denormalize it
                 float eyeDepth = LinearEyeDepth(rawDepth);
                  
-                if(rayDepth > eyeDepth) discard;
+                // if(rayDepth > eyeDepth) discard;
+                return rayDepth > eyeDepth;
             }
 
             float4 Frag (Varyings input) : SV_Target
@@ -341,11 +342,11 @@ Shader "Custom/RayMarchShader"
                 float d = RayMarch(camPos, rD);
 
                 //Ignore far away or occluded points
-                if(d >= MAX_DIST) discard;
+                if(d >= MAX_DIST) return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
                 
                 float3 p = camPos + rD * d;
                 
-                CheckForDepth(p, input.texcoord);
+                if(CheckForDepth(p, input.texcoord)) return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
 
                 float dif = GetLight(p);
                 color = float4(dif, dif, dif, 1);
