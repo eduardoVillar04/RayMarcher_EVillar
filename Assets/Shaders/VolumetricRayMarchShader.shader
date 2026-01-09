@@ -5,12 +5,24 @@ Shader "Custom/VolumetricRayMarchShader"
         HLSLINCLUDE
 
         #define NUM_STEPS 32
+        #define LIGHT_NUM_STEPS 16
 
         float4x4 _CamLocalToWorldMatrix; // cam.transform.localToWorldMatrix 
         float3 _ViewParams; // planeHeight, planeWidth, cam.nearClipPlane
 
+        // Texture
         Texture3D<float> _CloudTex;
         SamplerState sampler_CloudTex;
+
+        // Params
+        // float _NumSteps;
+        float _StepSize;
+        float _DensityScale;
+        // float _NumLightSteps;
+        float _LightStepSize;
+        float _LightAbsorb;
+        float _DarknessThreshold;
+        float _Transmittance;
 
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
@@ -70,7 +82,7 @@ Shader "Custom/VolumetricRayMarchShader"
             }
 
 
-            float3 VolumetricRayMarch(float3 posCloud, float3 sizeCloud, float3 rO, float3 rD, float stepSize, float densityScale, float numLightSteps, 
+            float3 VolumetricRayMarch(float3 posCloud, float3 sizeCloud, float3 rO, float3 rD, float numSteps, float stepSize, float densityScale, float numLightSteps, 
                                      float lightStepSize, float3 lightDir, float lightAbsorb,  float darknessThreshold, float transmittance)
             {
                 float3 cloudMin = posCloud - sizeCloud * 0.5;
@@ -79,6 +91,8 @@ Shader "Custom/VolumetricRayMarchShader"
                 float tEnter;
                 float tExit;
                 bool hit = RayBoxSlabIntersection(rO, rD, cloudMin, cloudMax, tEnter, tExit);
+
+                float rayDistInBox = tExit - tEnter;
 
                 // If there is no intersection return a result with transmission 1 to make the alpha 0
                 if(!hit)
@@ -95,27 +109,22 @@ Shader "Custom/VolumetricRayMarchShader"
                 float lightAccumulation = 0;
                 float finalLight = 0;
 
-                for(int i=0; i < NUM_STEPS; i++)
+                for(float i=0; i < numSteps; i++)
                 {
                     rO += rD * stepSize;
 
                     float3 samplePos = rO;
 
-                    // bool inside = (samplePos >= cloudMin) && (samplePos <= cloudMax);
-                    bool inside = (stepSize * i) < (tExit - tEnter);
-                     
-                    // if (!inside) continue;
                     // If the ray leaves the box it wont enter again
-                    if(!inside) break;
+                    if((stepSize * i) > rayDistInBox) break;
 
                     float3 uvw = (samplePos - cloudMin) / sizeCloud;
-                    // float sampledDensity = _CloudTex.Sample(sampler_CloudTex, uvw).r;
                     float sampledDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, uvw).r;                    
                     density += sampledDensity;
 
                     float3 lightRayOrigin = samplePos;
 
-                    for(int j=0; j < numLightSteps; j++)
+                    for(float j=0; j < numLightSteps; j++)
                     {
                         lightRayOrigin += -lightDir * lightStepSize;
                         float3 lightUVW = (lightRayOrigin - cloudMin) / sizeCloud;
@@ -124,7 +133,6 @@ Shader "Custom/VolumetricRayMarchShader"
                         // If the point is inside the cloud calculate light density, if not it is 0 (all light passes)
                         if(all(lightUVW >= 0) && all(lightUVW <= 1)) lightDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, lightUVW);
 
-                        // float lightDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, lightRayOrigin);
                         lightAccumulation += lightDensity;
                     }
 
@@ -207,7 +215,8 @@ Shader "Custom/VolumetricRayMarchShader"
                 float3 lightPos = float3(-100,-100,-100);
                 float3 lightDir = normalize(cloudPos - lightPos);
 
-                float3 result = VolumetricRayMarch(cloudPos, cloudSize, camPos, rD, 0.16, 0.41, 16, 0.33, lightDir, 2, 0, 0.68);
+                float3 result = VolumetricRayMarch(cloudPos, cloudSize, camPos, rD, NUM_STEPS, 
+                                                  _StepSize, _DensityScale, LIGHT_NUM_STEPS, _LightStepSize, lightDir, _LightAbsorb, _DarknessThreshold, _Transmittance);
 
                 float3 lightCloudColor = float4(1,1,1,1);
                 float3 darkCloudColor = float4(0.2,0.2,0.2,1);

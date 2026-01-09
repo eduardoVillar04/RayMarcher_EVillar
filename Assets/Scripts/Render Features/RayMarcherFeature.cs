@@ -56,7 +56,7 @@ public class RayMarcherFeature : ScriptableRendererFeature
             RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, smoothSubtractionObjs, smoothSubtractionBuffer, "_SmoothSubtractionObjsBuffer", "_SmoothSubtractionObjsCount");
             RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_RayMarchMat, smoothIntersectionObjs, smoothIntersectionBuffer, "_SmoothIntersectionObjsBuffer", "_SmoothIntersectionObjsCount");
 
-            RayMarcherObjManager.Instance?.SetExtraParameters(m_RayMarchMat);
+            RayMarcherObjManager.Instance?.SetRayMarcherExtraParameters(m_RayMarchMat);
 
             ////Set cloud texture
             //m_RayMarchMat.SetTexture("_CloudTex", cloudTex);
@@ -125,6 +125,10 @@ public class RayMarcherFeature : ScriptableRendererFeature
 
             //Set cloud texture
             m_VolumetricRayMarchMat.SetTexture("_CloudTex", cloudTex);
+
+            // Set cloud params
+            RayMarcherObjManager.Instance?.SetVolumetricRayMarcherExtraParameters(m_VolumetricRayMarchMat);
+
 
             // We will also need the depth texture of the normal raymarcher
 

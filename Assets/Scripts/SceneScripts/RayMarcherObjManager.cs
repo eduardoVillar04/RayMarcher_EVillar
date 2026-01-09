@@ -14,16 +14,32 @@ public class RayMarcherObjManager : MonoBehaviour
     public bool m_RepetitionActive = false;
     public Vector3 _RepetitionCellSize = Vector3.one;
 
+    [Header("Cloud params")]
+    //public float m_NumSteps = 32f;
+    public float m_StepSize = 0.16f;
+    public float m_DensityScale = 0.41f;
+    //public float m_NumLightSteps = 16;
+    public float m_LightStepSize = 0.33f;
+    public float m_LightAbsorb = 2f;
+    public float m_DarknessThreshold = 0f;
+    public float m_Transmittance = 0.68f;
+
+
+
     [Header("Lists")]
     public List<RayMarcherObject> m_DefaultObjs = new List<RayMarcherObject>();
     public List<RayMarcherObject> m_SmoothUnionObjs = new List<RayMarcherObject>();
     public List<RayMarcherObject> m_SmoothSubtractionObjs = new List<RayMarcherObject>();
     public List<RayMarcherObject> m_SmoothIntersectionObjs = new List<RayMarcherObject>();
 
+    public List<RayMarcherObject> m_CloudsObjs = new List<RayMarcherObject>();
+
     public ComputeBuffer m_DefaultObjsBuffer;
     public ComputeBuffer m_SmoothUnionObjsBuffer;
     public ComputeBuffer m_SmoothSubtractionObjsBuffer;
     public ComputeBuffer m_SmoothIntersectionObjsBuffer;
+
+    public ComputeBuffer m_CloudsObjsBuffer;
 
     private void Awake()
     {
@@ -111,11 +127,23 @@ public class RayMarcherObjManager : MonoBehaviour
         rmMat.SetInt(intCountName, objs.Count);
     }
 
-    public void SetExtraParameters(Material rmMat)
+    public void SetRayMarcherExtraParameters(Material rmMat)
     {
         rmMat.SetFloat("_SmoothKValue", m_KValue);
         rmMat.SetInt("_RepetitionActive", m_RepetitionActive == true ? 1 : 0);
         rmMat.SetVector("_RepetitionCellSize", _RepetitionCellSize);
+    }
+
+    public void SetVolumetricRayMarcherExtraParameters(Material vrmMat)
+    {
+        //vrmMat.SetFloat("_NumSteps", m_NumSteps);
+        vrmMat.SetFloat("_StepSize", m_StepSize);
+        vrmMat.SetFloat("_DensityScale", m_DensityScale);
+        //vrmMat.SetFloat("_NumLightSteps", m_NumLightSteps);
+        vrmMat.SetFloat("_LightStepSize", m_LightStepSize);
+        vrmMat.SetFloat("_LightAbsorb", m_LightAbsorb);
+        vrmMat.SetFloat("_DarknessThreshold", m_DarknessThreshold);
+        vrmMat.SetFloat("_Transmittance", m_Transmittance);
     }
 
     private void OnDestroy()

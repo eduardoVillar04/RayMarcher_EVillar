@@ -59,6 +59,10 @@ public class RayMarcherObject : MonoBehaviour
                 Gizmos.color = Color.purple;
                 Gizmos.DrawWireCube(transform.position, Vector3.one * size.x);
                 break;
+            case PrimitiveType.CLOUD:
+                Gizmos.color = Color.white;
+                Gizmos.DrawWireCube(transform.position, size);
+                break;
             default:
                 break;
         }
@@ -70,7 +74,8 @@ public enum PrimitiveType
     NONE = -1,
     SPHERE,
     BOX,
-    MENGER_SPONGE
+    MENGER_SPONGE,
+    CLOUD
 }
 
 public enum OperationType
