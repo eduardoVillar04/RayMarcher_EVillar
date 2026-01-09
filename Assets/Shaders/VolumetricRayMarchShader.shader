@@ -87,7 +87,11 @@ Shader "Custom/VolumetricRayMarchShader"
 
             float3 VolumetricRayMarch(float3 posCloud, float3 sizeCloud, float3 rO, float3 rD, float numSteps, float stepSize, float densityScale, float numLightSteps, 
                                      float lightStepSize, float3 lightDir, float lightAbsorb,  float darknessThreshold, float transmittance)
-            {
+            {            
+                
+                float3 debugCol = 1;
+                return debugCol;
+
                 float3 cloudMin = posCloud - sizeCloud * 0.5;
                 float3 cloudMax = posCloud + sizeCloud * 0.5;
                 
@@ -150,53 +154,6 @@ Shader "Custom/VolumetricRayMarchShader"
                 float3 result = float3(finalLight, transmission, transmittance);
                 return result;
             }
-
-            // float3 VolumetricRayMarch(float3 posCloud, float3 sizeCloud, float3 rO, float3 rD, float stepSize, float densityScale, float numLightSteps, 
-            //                          float lightStepSize, float3 lightDir, float lightAbsorb,  float darknessThreshold, float transmittance)
-            // {
-            //     float3 cloudMin = posCloud - sizeCloud * 0.5;
-            //     float3 cloudMax = posCloud + sizeCloud * 0.5;
-                
-            //     float density = 0;
-            //     float transmission = 0;
-            //     float lightAccumulation = 0;
-            //     float finalLight = 0;
-
-            //     for(int i=0; i < NUM_STEPS; i++)
-            //     {
-            //         rO += rD * stepSize;
-
-            //         float3 samplePos = rO;
-
-            //         bool inside = (samplePos >= cloudMin) && (samplePos <= cloudMax);
-            //         if (!inside) continue;
-
-            //         float3 uvw = (samplePos - cloudMin) / sizeCloud;
-            //         // float sampledDensity = _CloudTex.Sample(sampler_CloudTex, uvw).r;
-            //         float sampledDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, uvw).r;                    
-            //         density += sampledDensity;
-
-            //         float3 lightRayOrigin = uvw;
-
-            //         for(int j=0; j < numLightSteps; j++)
-            //         {
-            //             lightRayOrigin += -lightDir * lightStepSize;
-            //             // float lightDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, lightRayOrigin);
-            //             float lightDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, lightRayOrigin);
-            //             lightAccumulation += lightDensity;
-            //         }
-
-            //         float lightTransmission = exp(-lightAccumulation);
-            //         float shadow = darknessThreshold + lightTransmission * (1.0 - darknessThreshold);
-            //         finalLight += density * transmittance * shadow;
-            //         transmittance *= exp(-density * lightAbsorb);
-            //     }
-
-            //     transmission = exp(-density);
-
-            //     float3 result = float3(finalLight, transmission, transmittance);
-            //     return result;
-            // }
 
             float4 Frag (Varyings input) : SV_Target
             {
