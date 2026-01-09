@@ -90,7 +90,7 @@ Shader "Custom/VolumetricRayMarchShader"
             {            
                 
                 float3 debugCol = 1;
-                return debugCol;
+                // return debugCol;
 
                 float3 cloudMin = posCloud - sizeCloud * 0.5;
                 float3 cloudMax = posCloud + sizeCloud * 0.5;
@@ -98,7 +98,6 @@ Shader "Custom/VolumetricRayMarchShader"
                 float tEnter;
                 float tExit;
                 bool hit = RayBoxSlabIntersection(rO, rD, cloudMin, cloudMax, tEnter, tExit);
-
                 float rayDistInBox = tExit - tEnter;
 
                 // If there is no intersection return a result with transmission 1 to make the alpha 0
@@ -118,15 +117,13 @@ Shader "Custom/VolumetricRayMarchShader"
 
                 for(float i=0; i < numSteps; i++)
                 {
-                    rO += rD * stepSize;
-
-                    float3 samplePos = rO;
-
+                    float3 samplePos = rO + rD * (stepSize * i);
+                    
                     // If the ray leaves the box it wont enter again
                     if((stepSize * i) > rayDistInBox) break;
 
                     float3 uvw = (samplePos - cloudMin) / sizeCloud;
-                    float sampledDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, uvw).r;                    
+                    float sampledDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, uvw);                    
                     density += sampledDensity;
 
                     float3 lightRayOrigin = samplePos;
@@ -186,7 +183,7 @@ Shader "Custom/VolumetricRayMarchShader"
                 // BlitTex is scene color texture
                 float4 sceneCol = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
                 float3 outRGB = lerp(sceneCol.rgb, finalCloudColor, finalAlpha);
-
+                
                 return float4(outRGB, 1.0);
             }
             
