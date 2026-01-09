@@ -14,6 +14,9 @@ Shader "Custom/VolumetricRayMarchShader"
         Texture3D<float> _CloudTex;
         SamplerState sampler_CloudTex;
 
+        // Light
+        float3 _LightPos;
+
         // Params
         // float _NumSteps;
         float _StepSize;
@@ -212,8 +215,7 @@ Shader "Custom/VolumetricRayMarchShader"
                 float3 cloudMin = cloudPos - cloudSize * 0.5;
                 float3 cloudMax = cloudPos + cloudSize * 0.5;
 
-                float3 lightPos = float3(-100,-100,-100);
-                float3 lightDir = normalize(cloudPos - lightPos);
+                float3 lightDir = normalize(cloudPos - _LightPos);
 
                 float3 result = VolumetricRayMarch(cloudPos, cloudSize, camPos, rD, NUM_STEPS, 
                                                   _StepSize, _DensityScale, LIGHT_NUM_STEPS, _LightStepSize, lightDir, _LightAbsorb, _DarknessThreshold, _Transmittance);

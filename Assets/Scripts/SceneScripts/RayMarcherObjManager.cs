@@ -7,6 +7,9 @@ public class RayMarcherObjManager : MonoBehaviour
 {
     public static RayMarcherObjManager Instance;
 
+    [Header("Light source pos")]
+    public Transform m_LightTransform;
+
     [Header("Blend params")]
     public float m_KValue = 1.0f;
 
@@ -23,7 +26,6 @@ public class RayMarcherObjManager : MonoBehaviour
     public float m_LightAbsorb = 2f;
     public float m_DarknessThreshold = 0f;
     public float m_Transmittance = 0.68f;
-
 
 
     [Header("Lists")]
@@ -144,6 +146,18 @@ public class RayMarcherObjManager : MonoBehaviour
         vrmMat.SetFloat("_LightAbsorb", m_LightAbsorb);
         vrmMat.SetFloat("_DarknessThreshold", m_DarknessThreshold);
         vrmMat.SetFloat("_Transmittance", m_Transmittance);
+    }
+
+    public void SetLightPos(Material mat)
+    {
+        if(m_LightTransform == null)
+        {
+            mat.SetVector("_LightPos", Vector3.zero);
+        }
+        else
+        {
+            mat.SetVector("_LightPos", m_LightTransform.position);
+        }
     }
 
     private void OnDestroy()

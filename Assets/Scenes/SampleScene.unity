@@ -330,6 +330,10 @@ PrefabInstance:
       value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
+      propertyPath: m_LightTransform
+      value: 
+      objectReference: {fileID: 993916217}
+    - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
       propertyPath: _RepetitionCellSize.x
       value: 5
       objectReference: {fileID: 0}
@@ -566,6 +570,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &993916216
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 993916217}
+  m_Layer: 0
+  m_Name: Light
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &993916217
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 993916216}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.28377, y: 4.31, z: 3.0725}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1214057143
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -761,3 +796,4 @@ SceneRoots:
   - {fileID: 1214057143}
   - {fileID: 202367123}
   - {fileID: 1908530865}
+  - {fileID: 993916217}

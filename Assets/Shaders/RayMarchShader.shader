@@ -19,6 +19,9 @@ Shader "Custom/RayMarchShader"
             float3 size;
         };
 
+        // Light
+        float3 _LightPos;
+
         // --------------------------------------------------------------------------- OBJ BUFFERS ---------------------------------------------------------------------------
         // [Default objs]
         // Objs that will be rendered without any effects
@@ -294,7 +297,7 @@ Shader "Custom/RayMarchShader"
 
             float GetLight(float3 p) 
             {
-                float3 lightPos = float3(4.9,4.9,4.9);
+                float3 lightPos = _LightPos;
 
                 if(_RepetitionActive)
                 {
