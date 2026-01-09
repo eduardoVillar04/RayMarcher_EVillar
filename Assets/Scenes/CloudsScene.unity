@@ -265,6 +265,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
+      propertyPath: m_StepSize
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
       propertyPath: m_LightTransform
       value: 
       objectReference: {fileID: 1188543616}

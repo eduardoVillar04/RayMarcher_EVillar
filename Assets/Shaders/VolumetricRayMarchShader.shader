@@ -3,8 +3,8 @@ Shader "Custom/VolumetricRayMarchShader"
     SubShader
     {
         HLSLINCLUDE
-
-        #define NUM_STEPS 32
+        #pragma enable_d3d11_debug_symbols
+        #define NUM_STEPS 64
         #define LIGHT_NUM_STEPS 16
 
         float4x4 _CamLocalToWorldMatrix; // cam.transform.localToWorldMatrix 
@@ -88,10 +88,6 @@ Shader "Custom/VolumetricRayMarchShader"
             float3 VolumetricRayMarch(float3 posCloud, float3 sizeCloud, float3 rO, float3 rD, float numSteps, float stepSize, float densityScale, float numLightSteps, 
                                      float lightStepSize, float3 lightDir, float lightAbsorb,  float darknessThreshold, float transmittance)
             {            
-                
-                float3 debugCol = 1;
-                // return debugCol;
-
                 float3 cloudMin = posCloud - sizeCloud * 0.5;
                 float3 cloudMax = posCloud + sizeCloud * 0.5;
                 
@@ -123,8 +119,16 @@ Shader "Custom/VolumetricRayMarchShader"
                     if((stepSize * i) > rayDistInBox) break;
 
                     float3 uvw = (samplePos - cloudMin) / sizeCloud;
-                    float sampledDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, uvw);                    
-                    density += sampledDensity;
+
+                    // float sampledDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, uvw).r;                    
+                    // float sampledDensity = _CloudTex.SampleLevel(sampler_CloudTex, uvw, 0);             
+
+                    // Aprox derivatives for samplegrad
+                    float3 ddx = float3(stepSize / sizeCloud.x, 0, 0);
+                    float3 ddy = float3(0, stepSize / sizeCloud.y, 0);
+                    float sampledDensity = _CloudTex.SampleGrad(sampler_CloudTex, uvw, ddx, ddy).r;
+                    
+                    density += sampledDensity * densityScale;
 
                     float3 lightRayOrigin = samplePos;
 
@@ -135,7 +139,12 @@ Shader "Custom/VolumetricRayMarchShader"
                         float lightDensity = 0;
 
                         // If the point is inside the cloud calculate light density, if not it is 0 (all light passes)
-                        if(all(lightUVW >= 0) && all(lightUVW <= 1)) lightDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, lightUVW);
+                        // if(all(lightUVW >= 0) && all(lightUVW <= 1)) lightDensity = SAMPLE_TEXTURE3D(_CloudTex, sampler_CloudTex, lightUVW).r;
+                        // if(all(lightUVW >= 0) && all(lightUVW <= 1)) lightDensity = _CloudTex.SampleLevel(sampler_CloudTex, uvw, 0);
+                        float3 light_ddx = float3(lightStepSize / sizeCloud.x, 0, 0);
+                        float3 light_ddy = float3(0, lightStepSize / sizeCloud.y, 0);
+                        lightDensity = _CloudTex.SampleGrad(sampler_CloudTex, lightUVW, light_ddx, light_ddy).r;
+
 
                         lightAccumulation += lightDensity;
                     }
