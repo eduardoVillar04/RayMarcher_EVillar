@@ -16,6 +16,8 @@ public class RayMarcherFeature : ScriptableRendererFeature
 
     public Texture3D m_CloudText3D;
 
+    private RTHandle m_RayMarchColorRT;
+
     public class RayMarcherPass : ScriptableRenderPass
     {
         const string m_PassName = "RayMarcherPass";
@@ -23,10 +25,13 @@ public class RayMarcherFeature : ScriptableRendererFeature
         // Material used in the blit operation.
         Material m_RayMarchMat;
 
+        RTHandle m_TargetRT;
+
         // Function used to transfer the material from the renderer feature to the render pass.
-        public void Setup(Material mat/*, Texture3D cloudTex*/)
+        public void Setup(Material mat, RTHandle targetRT)
         {
             m_RayMarchMat = mat;
+            m_TargetRT = targetRT;
 
             Camera cam = Camera.current;
             if(cam == null) cam = Camera.main;
@@ -79,11 +84,15 @@ public class RayMarcherFeature : ScriptableRendererFeature
             // the texture is created with the same dimensions as the active color texture
             var source = resourceData.activeColorTexture;
 
-            var destinationDesc = renderGraph.GetTextureDesc(source);
-            destinationDesc.name = $"CameraColor-{m_PassName}";
-            destinationDesc.clearBuffer = false;
+            // OLD DEST
+            //var destinationDesc = renderGraph.GetTextureDesc(source);
+            //destinationDesc.name = $"CameraColor-{m_PassName}";
+            //destinationDesc.clearBuffer = false;
 
-            TextureHandle destination = renderGraph.CreateTexture(destinationDesc);
+            //TextureHandle destination = renderGraph.CreateTexture(destinationDesc);
+
+            TextureHandle destination = renderGraph.ImportTexture(m_TargetRT);
+
 
             RenderGraphUtils.BlitMaterialParameters para = new(source, destination, m_RayMarchMat, 0);
             renderGraph.AddBlitPass(para, passName: m_PassName);
@@ -102,11 +111,13 @@ public class RayMarcherFeature : ScriptableRendererFeature
 
         // Material used in the blit operation.
         Material m_VolumetricRayMarchMat;
+        RTHandle m_RayMarchInputRT;
 
         // Function used to transfer the material from the renderer feature to the render pass.
-        public void Setup(Material mat, Texture3D cloudTex)
+        public void Setup(Material mat, Texture3D cloudTex, RTHandle rayMarchRT)
         {
             m_VolumetricRayMarchMat = mat;
+            m_RayMarchInputRT = rayMarchRT;
 
             Camera cam = Camera.current;
             if(cam == null) cam = Camera.main;
@@ -131,6 +142,7 @@ public class RayMarcherFeature : ScriptableRendererFeature
                                                                 "_CloudObjsBuffer", "_CloudObjsCount");
 
             // We will also need the depth texture of the normal raymarcher
+            m_VolumetricRayMarchMat.SetTexture("_RayMarchTex", m_RayMarchInputRT);
 
 
             requiresIntermediateTexture = true;
@@ -145,7 +157,9 @@ public class RayMarcherFeature : ScriptableRendererFeature
                 return;
             }
 
-            var source = resourceData.activeColorTexture;
+            // OLD SOURCE
+            //var source = resourceData.activeColorTexture;
+            var source = renderGraph.ImportTexture(m_RayMarchInputRT);
 
             var destinationDesc = renderGraph.GetTextureDesc(source);
             destinationDesc.name = $"CameraColor-{m_PassName}";
@@ -172,6 +186,12 @@ public class RayMarcherFeature : ScriptableRendererFeature
         // Configures where the render pass should be injected.
         m_RayMarcherPass.renderPassEvent = injectionPoint;
         m_VolumetricRayMarcherPass.renderPassEvent = injectionPoint;
+
+        // Init RTHandle for dest texture ray march pass
+        var desc = new RenderTextureDescriptor(Screen.width, Screen.height, RenderTextureFormat.ARGBFloat, 0);
+        desc.msaaSamples = 1;
+        desc.enableRandomWrite = true; 
+        m_RayMarchColorRT = RTHandles.Alloc(desc);
     }
 
     // Here you can inject one or multiple render passes in the renderer.
@@ -185,7 +205,7 @@ public class RayMarcherFeature : ScriptableRendererFeature
         }
         else
         {
-            m_RayMarcherPass.Setup(m_RayMarcherMat);
+            m_RayMarcherPass.Setup(m_RayMarcherMat, m_RayMarchColorRT);
             renderer.EnqueuePass(m_RayMarcherPass);        
         }
 
@@ -195,7 +215,7 @@ public class RayMarcherFeature : ScriptableRendererFeature
         }
         else
         {
-            m_VolumetricRayMarcherPass.Setup(m_VolumetricRayMarchMat, m_CloudText3D);
+            m_VolumetricRayMarcherPass.Setup(m_VolumetricRayMarchMat, m_CloudText3D, m_RayMarchColorRT);
             renderer.EnqueuePass(m_VolumetricRayMarcherPass);
         }         
 

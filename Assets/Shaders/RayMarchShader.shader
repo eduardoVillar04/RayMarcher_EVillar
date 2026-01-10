@@ -352,7 +352,8 @@ Shader "Custom/RayMarchShader"
                 if(CheckForDepth(p, input.texcoord)) return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
 
                 float dif = GetLight(p);
-                color = float4(dif, dif, dif, 1);
+                float depth = d / MAX_DIST;
+                color = float4(dif, dif, dif, depth);
                 return color;
 
             }
