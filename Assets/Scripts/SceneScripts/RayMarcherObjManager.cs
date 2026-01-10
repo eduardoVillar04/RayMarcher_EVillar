@@ -36,12 +36,12 @@ public class RayMarcherObjManager : MonoBehaviour
 
     public List<RayMarcherObject> m_CloudsObjs = new List<RayMarcherObject>();
 
-    public ComputeBuffer m_DefaultObjsBuffer;
-    public ComputeBuffer m_SmoothUnionObjsBuffer;
-    public ComputeBuffer m_SmoothSubtractionObjsBuffer;
-    public ComputeBuffer m_SmoothIntersectionObjsBuffer;
+    public ComputeBuffer m_DefaultObjsBuffer = null;
+    public ComputeBuffer m_SmoothUnionObjsBuffer = null;
+    public ComputeBuffer m_SmoothSubtractionObjsBuffer = null;
+    public ComputeBuffer m_SmoothIntersectionObjsBuffer = null;
 
-    public ComputeBuffer m_CloudsObjsBuffer;
+    public ComputeBuffer m_CloudsObjsBuffer = null;
 
     private void Awake()
     {
@@ -97,7 +97,7 @@ public class RayMarcherObjManager : MonoBehaviour
         }
     }
 
-    public void SetRayMarcherShaderComputeBuffer(Material rmMat, List<RayMarcherObject> objs, ComputeBuffer buffer, string structuredBufferName, string intCountName)
+    public void SetRayMarcherShaderComputeBuffer(Material rmMat, List<RayMarcherObject> objs, ref ComputeBuffer buffer, string structuredBufferName, string intCountName)
     {
         // If there are no objects, update just the count
         if (objs.Count == 0)
@@ -106,14 +106,21 @@ public class RayMarcherObjManager : MonoBehaviour
             return;
         }
 
-        var defaultObjsData = new RMObj[objs.Count];
+        int stride = sizeof(int) * 2 + sizeof(float) * 6;
 
-        buffer?.Release();
+        // Recreate only if needed
+        if (buffer == null || buffer.count != objs.Count)
+        {
+            buffer?.Release();
+            buffer = new ComputeBuffer(objs.Count, stride);
+        }
+
+        var data = new RMObj[objs.Count];
 
         for (int i = 0; i < objs.Count; i++)
         {
             RayMarcherObject currentObj = objs[i];
-            defaultObjsData[i] = new RMObj
+            data[i] = new RMObj
             {
                 primType = (int)currentObj.primType,
                 opType = (int)currentObj.operationType,
@@ -122,9 +129,7 @@ public class RayMarcherObjManager : MonoBehaviour
             };
         }
 
-        buffer = new ComputeBuffer(objs.Count, sizeof(int) * 2 + sizeof(float) * 6);
-        buffer.SetData(defaultObjsData);
-
+        buffer.SetData(data);
         rmMat.SetBuffer(structuredBufferName, buffer);
         rmMat.SetInt(intCountName, objs.Count);
     }

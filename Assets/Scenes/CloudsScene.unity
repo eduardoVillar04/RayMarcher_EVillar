@@ -205,8 +205,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 600175227}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.55, y: -0.046, z: -6.67}
+  m_LocalRotation: {x: 0.014342367, y: 0.088089146, z: -0.0012342818, w: 0.9960086}
+  m_LocalPosition: {x: -1.975496, y: -0.013005674, z: -8.485418}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -267,6 +267,18 @@ PrefabInstance:
     - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
       propertyPath: m_StepSize
       value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
+      propertyPath: m_DensityScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
+      propertyPath: m_LightStepSize
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
+      propertyPath: m_Transmittance
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1767741329887376060, guid: a769158bfb020fa4fb3cc3c428ea234c, type: 3}
       propertyPath: m_LightTransform
@@ -346,7 +358,7 @@ Transform:
   m_GameObject: {fileID: 1188543615}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.941, y: 5.74, z: -5.1}
+  m_LocalPosition: {x: -2.87, y: -3.7, z: -5.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
