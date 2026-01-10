@@ -57,6 +57,12 @@ public class RayMarcherObjManager : MonoBehaviour
 
     public void AddObjToList(RayMarcherObject obj, OperationType opType)
     {
+        if (obj.primType == PrimitiveType.CLOUD)
+        {
+            m_CloudsObjs.Add(obj);
+            return;
+        }
+
         switch (opType)
         {
             case OperationType.NONE:
@@ -78,6 +84,12 @@ public class RayMarcherObjManager : MonoBehaviour
 
     public void RemoveObjFromList(RayMarcherObject obj, OperationType opType)
     {
+        if (obj.primType == PrimitiveType.CLOUD)
+        {
+            m_CloudsObjs.Remove(obj);
+            return;
+        }
+
         switch (opType)
         {
             case OperationType.NONE:
@@ -171,6 +183,7 @@ public class RayMarcherObjManager : MonoBehaviour
         m_SmoothUnionObjsBuffer?.Release();
         m_SmoothSubtractionObjsBuffer?.Release();
         m_SmoothIntersectionObjsBuffer?.Release();
+        m_CloudsObjsBuffer?.Release();
 
         Instance = null;
     }

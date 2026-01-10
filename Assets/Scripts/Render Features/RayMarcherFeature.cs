@@ -126,6 +126,9 @@ public class RayMarcherFeature : ScriptableRendererFeature
             // Set cloud params
             RayMarcherObjManager.Instance?.SetVolumetricRayMarcherExtraParameters(m_VolumetricRayMarchMat);
 
+            // Set clouds buffer
+            RayMarcherObjManager.Instance?.SetRayMarcherShaderComputeBuffer(m_VolumetricRayMarchMat, RayMarcherObjManager.Instance.m_CloudsObjs, ref RayMarcherObjManager.Instance.m_CloudsObjsBuffer,
+                                                                "_CloudObjsBuffer", "_CloudObjsCount");
 
             // We will also need the depth texture of the normal raymarcher
 

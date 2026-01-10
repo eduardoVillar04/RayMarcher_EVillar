@@ -178,7 +178,7 @@ Shader "Custom/RayMarchShader"
             {
                 float d;
                 int i = 0;
-
+                RM_Obj obj;
                 // Default rendering
                 float minDefault = MAX_DIST;
                 for(i = 0; i < _DefaultRMObjsCount; i++)
