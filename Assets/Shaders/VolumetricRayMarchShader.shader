@@ -6,6 +6,7 @@ Shader "Custom/VolumetricRayMarchShader"
         #define NUM_STEPS 64
         #define LIGHT_NUM_STEPS 16
         #define MAX_DIST 500
+        #define MAX_CLOUD_HITS 10
 
         struct CloudHit
         {
@@ -13,6 +14,8 @@ Shader "Custom/VolumetricRayMarchShader"
             float tExit;
             float3 pos;
             float3 size;
+            float3 cloudMin;
+            float3 cloudMax;
         };
 
         float4x4 _CamLocalToWorldMatrix; // cam.transform.localToWorldMatrix 
@@ -103,107 +106,114 @@ Shader "Custom/VolumetricRayMarchShader"
             }
 
 
-            float3 VolumetricRayMarch(float3 rO, float3 rD, float numSteps, float stepSize, float densityScale, float numLightSteps, 
-                                     float lightStepSize, float lightAbsorb,  float darknessThreshold, float transmittance)
-            {            
-                float3 cloudPos, cloudSize, lightDir, cloudMin, cloudMax, minCloudMin, minCloudMax;
-                
-                float tEnter, tExit;
+            float3 VolumetricRayMarch(float3 rO, float3 rD, float numSteps, float stepSize,float densityScale, float numLightSteps, float lightStepSize,
+                                    float lightAbsorb, float darknessThreshold, float transmittance)
+            {
+                CloudHit hits[MAX_CLOUD_HITS];
+                int hitCount = 0;
 
-                float minTEnter = MAX_DIST;
-                float minTExit;
-
-                RM_Obj currentCloud;
-                bool hit;
-
-                // Check for the closest cloud to the camera in this pixel
-                for(float i = 0; i < _CloudObjsCount; i++)
+                // Gather all cloud intersections
+                for (int i = 0; i < _CloudObjsCount && hitCount < MAX_CLOUD_HITS; i++)
                 {
-                    currentCloud = _CloudObjsBuffer[i];
-                    
-                    cloudMin = currentCloud.pos - currentCloud.size * 0.5;
-                    cloudMax = currentCloud.pos + currentCloud.size * 0.5;
-                
-                    hit = RayBoxSlabIntersection(rO, rD, cloudMin, cloudMax, tEnter, tExit);
+                    RM_Obj cloud = _CloudObjsBuffer[i];
 
-                    // If the hit with the cloud has the least distance, save its params
-                    if(hit && tEnter < minTEnter)
+                    float3 cloudMin = cloud.pos - cloud.size * 0.5;
+                    float3 cloudMax = cloud.pos + cloud.size * 0.5;
+
+                    float tEnter, tExit;
+                    if (RayBoxSlabIntersection(rO, rD, cloudMin, cloudMax, tEnter, tExit))
                     {
-                        minTEnter = tEnter;
-                        minTExit = tExit;
-                        minCloudMin = cloudMin;
-                        minCloudMax = cloudMax;
-                        cloudPos = currentCloud.pos;
-                        cloudSize = currentCloud.size;
+                        // Ignore intersections behind camera
+                        if (tExit > 0.0)
+                        {
+                            hits[hitCount].tEnter = max(tEnter, 0.0);
+                            hits[hitCount].tExit  = tExit;
+                            hits[hitCount].pos    = cloud.pos;
+                            hits[hitCount].size   = cloud.size;
+                            hitCount++;
+                        }
                     }
                 }
 
-                // If there is no intersection return a result with transmission 1 to make the alpha 0
-                if(minTEnter >= MAX_DIST)
+                if (hitCount == 0) return float3(0,1,1);
+
+                // Sort hits front to back
+                for (int i = 0; i < hitCount - 1; i++)
                 {
-                    return float3(1,1,1);
+                    for (int j = i + 1; j < hitCount; j++)
+                    {
+                        if (hits[j].tEnter < hits[i].tEnter)
+                        {
+                            CloudHit tmp = hits[i];
+                            hits[i] = hits[j];
+                            hits[j] = tmp;
+                        }
+                    }
                 }
 
-                // Make sure the params correspond to the corrent cloud
-                tEnter = minTEnter;
-                tExit = minTExit;
-                cloudMin = minCloudMin;
-                cloudMax = minCloudMax;
+                // Raymarch each cloud segment
+                float finalLight = 0.0;
+                float totalDensity = 0.0;
 
-                lightDir = normalize(cloudPos - _LightPos);
-                float rayDistInBox = tExit - tEnter;
-                
-                // The origin of the ray to march the cloud is the intersection with the ray from the camera 
-                rO += rD * tEnter;
-
-                float density = 0;
-                float transmission = 0;
-                float lightAccumulation = 0;
-                float finalLight = 0;
-
-                for(float i=0; i < numSteps; i++)
+                for (int c = 0; c < hitCount; c++)
                 {
-                    float3 samplePos = rO + rD * (stepSize * i);
-                    
-                    // If the ray leaves the box it wont enter again
-                    if((stepSize * i) > rayDistInBox) break;
+                    CloudHit h = hits[c];
 
-                    float3 uvw = (samplePos - cloudMin) / cloudSize;
+                    float3 cloudMin = h.pos - h.size * 0.5;
+                    float3 cloudMax = h.pos + h.size * 0.5;
 
-                    // Aprox derivatives for samplegrad
-                    float3 ddx = float3(stepSize / cloudSize.x, 0, 0);
-                    float3 ddy = float3(0, stepSize / cloudSize.y, 0);
-                    float sampledDensity = _CloudTex.SampleGrad(sampler_CloudTex, uvw, ddx, ddy).r;
-                    
-                    density += sampledDensity * densityScale;
+                    float rayLength = h.tExit - h.tEnter;
+                    float3 marchOrigin = rO + rD * h.tEnter;
+                    float3 lightDir = normalize(h.pos - _LightPos);
 
-                    float3 lightRayOrigin = samplePos;
-
-                    for(float j=0; j < numLightSteps; j++)
+                    for (int i = 0; i < numSteps; i++)
                     {
-                        lightRayOrigin += -lightDir * lightStepSize;
-                        float3 lightUVW = (lightRayOrigin - cloudMin) / cloudSize;
-                        float lightDensity = 0;
+                        float dist = stepSize * i;
+                        if (dist > rayLength)
+                            break;
 
-                        // If the point is inside the cloud calculate light density, if not it is 0 (all light passes)
-                        float3 light_ddx = float3(lightStepSize / cloudSize.x, 0, 0);
-                        float3 light_ddy = float3(0, lightStepSize / cloudSize.y, 0);
-                        lightDensity = _CloudTex.SampleGrad(sampler_CloudTex, lightUVW, light_ddx, light_ddy).r;
+                        float3 samplePos = marchOrigin + rD * dist;
+                        float3 uvw = (samplePos - cloudMin) / h.size;
 
+                        // Sample density
+                        float3 ddx = float3(stepSize / h.size.x, 0, 0);
+                        float3 ddy = float3(0, stepSize / h.size.y, 0);
+                        float densitySample = _CloudTex.SampleGrad(sampler_CloudTex, uvw, ddx, ddy).r * densityScale;
 
-                        lightAccumulation += lightDensity;
+                        // If the density is too low ignore the point
+                        if (densitySample <= 0.0001) continue;
+
+                        totalDensity += densitySample;
+
+                        // Light marching
+                        float lightAccum = 0.0;
+                        float3 lightPos = samplePos;
+
+                        for (int j = 0; j < numLightSteps; j++)
+                        {
+                            lightPos -= lightDir * lightStepSize;
+                            float3 lightUVW = (lightPos - cloudMin) / h.size;
+
+                            float3 lddx = float3(lightStepSize / h.size.x, 0, 0);
+                            float3 lddy = float3(0, lightStepSize / h.size.y, 0);
+                            lightAccum += _CloudTex.SampleGrad(sampler_CloudTex, lightUVW, lddx, lddy).r;
+                        }
+
+                        float lightTransmission = exp(-lightAccum);
+                        float shadow = darknessThreshold + lightTransmission * (1.0 - darknessThreshold);
+
+                        finalLight += densitySample * transmittance * shadow;
+                        transmittance *= exp(-densitySample * lightAbsorb);
+
+                        // If the trasmittance is already low stop (its already opaque enough)
+                        if (transmittance < 0.01) break;
                     }
 
-                    float lightTransmission = exp(-lightAccumulation);
-                    float shadow = darknessThreshold + lightTransmission * (1.0 - darknessThreshold);
-                    finalLight += density * transmittance * shadow;
-                    transmittance *= exp(-density * lightAbsorb);
+                    if (transmittance < 0.01) break;
                 }
 
-                transmission = exp(-density);
-
-                float3 result = float3(finalLight, transmission, transmittance);
-                return result;
+                float transmission = exp(-totalDensity);
+                return float3(finalLight, transmission, transmittance);
             }
 
 
