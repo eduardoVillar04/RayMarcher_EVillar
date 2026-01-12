@@ -90,7 +90,7 @@ Shader "Custom/VolumetricRayMarchShader"
                     float tEnter, tExit;
                     if(RayBoxSlabIntersection(rO, rD, cloudMin, cloudMax, tEnter, tExit) && tExit > 0.0)
                     {
-                        hits[hitCount].tEnter = max(tEnter, 0.0);
+                        hits[hitCount].tEnter = max(0.0, tEnter);
                         hits[hitCount].tExit  = tExit;
                         hits[hitCount].pos    = cloud.pos;
                         hits[hitCount].size   = cloud.size;

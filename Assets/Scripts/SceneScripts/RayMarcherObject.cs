@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[ExecuteAlways]
 public class RayMarcherObject : MonoBehaviour
 {
     public PrimitiveType primType = PrimitiveType.SPHERE;
