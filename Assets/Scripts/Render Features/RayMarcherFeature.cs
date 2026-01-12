@@ -211,4 +211,15 @@ public class RayMarcherFeature : ScriptableRendererFeature
         }         
 
     }
+    
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (m_RayMarchColorRT != null)
+        {
+            RTHandles.Release(m_RayMarchColorRT);
+            m_RayMarchColorRT = null;
+        }
+    }
+
 }

@@ -246,6 +246,17 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!114 &480538171 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3197549540805763048, guid: a1aa7de54b89d9d4db85a46fedc9e389, type: 3}
+  m_PrefabInstance: {fileID: 826751953}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2da69624a4eb71d4b8c2665e4a1b1986, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RayMarcherObject
 --- !u!1001 &826751953
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -260,7 +271,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3197549540805763048, guid: a1aa7de54b89d9d4db85a46fedc9e389, type: 3}
       propertyPath: size.y
-      value: 20
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3197549540805763048, guid: a1aa7de54b89d9d4db85a46fedc9e389, type: 3}
+      propertyPath: _primType
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4958519106731368622, guid: a1aa7de54b89d9d4db85a46fedc9e389, type: 3}
       propertyPath: m_Name
@@ -311,6 +326,51 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a1aa7de54b89d9d4db85a46fedc9e389, type: 3}
+--- !u!1 &1264021840
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1264021842}
+  - component: {fileID: 1264021841}
+  m_Layer: 0
+  m_Name: MengerInputController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1264021841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1264021840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0647c58b4b9c7ae4887130e4bf538f1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MengerSpongeIncreaseInput
+  mengerSponge: {fileID: 480538171}
+--- !u!4 &1264021842
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1264021840}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 92.19702, y: 29.75514, z: 27.22699}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1278499667
 GameObject:
   m_ObjectHideFlags: 0
@@ -336,7 +396,7 @@ Transform:
   m_GameObject: {fileID: 1278499667}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 100, y: 100, z: 100}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -549,3 +609,4 @@ SceneRoots:
   - {fileID: 2001177860}
   - {fileID: 826751953}
   - {fileID: 1278499668}
+  - {fileID: 1264021842}
