@@ -84,13 +84,6 @@ public class RayMarcherFeature : ScriptableRendererFeature
             // the texture is created with the same dimensions as the active color texture
             var source = resourceData.activeColorTexture;
 
-            // OLD DEST
-            //var destinationDesc = renderGraph.GetTextureDesc(source);
-            //destinationDesc.name = $"CameraColor-{m_PassName}";
-            //destinationDesc.clearBuffer = false;
-
-            //TextureHandle destination = renderGraph.CreateTexture(destinationDesc);
-
             TextureHandle destination = renderGraph.ImportTexture(m_TargetRT);
 
 
@@ -157,8 +150,6 @@ public class RayMarcherFeature : ScriptableRendererFeature
                 return;
             }
 
-            // OLD SOURCE
-            //var source = resourceData.activeColorTexture;
             var source = renderGraph.ImportTexture(m_RayMarchInputRT);
 
             var destinationDesc = renderGraph.GetTextureDesc(source);
