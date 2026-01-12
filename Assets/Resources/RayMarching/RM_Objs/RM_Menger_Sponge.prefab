@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2da69624a4eb71d4b8c2665e4a1b1986, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RayMarcherObject
-  primType: 2
+  _primType: 2
   _operationType: -1
   size: {x: 10, y: 5, z: 1}
   drawGizmos: 1
