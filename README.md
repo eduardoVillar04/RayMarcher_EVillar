@@ -22,6 +22,7 @@ Bonus Features (Fractals, Blending, Clouds)
   - Merger Sponge -> Completed 31/12/25 with commit "Add Menger sponge support to RayMarcherObject"
 - Volumetric clouds -> Completed 12/01/26 with commit "fixed clouds rendering behind camera"
 > Completed 12/01/2026 with commits:
+> "Add configurable repetition cell to ray marcher" (29/12/25)
 > "Add configurable repetition cell to ray marcher" (31/12/25)
 > "Add Menger sponge support to RayMarcherObject" (31/12/25)
 > "fixed clouds rendering behind camera" (12/01/26)
