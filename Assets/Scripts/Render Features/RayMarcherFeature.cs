@@ -191,7 +191,7 @@ public class RayMarcherFeature : ScriptableRendererFeature
         var desc = new RenderTextureDescriptor(Screen.width, Screen.height, RenderTextureFormat.ARGBFloat, 0);
         desc.msaaSamples = 1;
         desc.enableRandomWrite = true; 
-        m_RayMarchColorRT = RTHandles.Alloc(desc);
+        m_RayMarchColorRT = RTHandles.Alloc(desc, name: "RayMarcherColorRT");
     }
 
     // Here you can inject one or multiple render passes in the renderer.
