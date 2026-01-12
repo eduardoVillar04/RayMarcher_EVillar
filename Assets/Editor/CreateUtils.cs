@@ -21,9 +21,13 @@ public static class CreateUtils
         StageUtility.PlaceGameObjectInCurrentStage(gameObject);
         GameObjectUtility.EnsureUniqueNameForSibling(gameObject);
 
+        GameObject parent = Selection.activeGameObject;
+        if (parent != null) GameObjectUtility.SetParentAndAlign(gameObject, parent);
+
         // Record undo, and select
         Undo.RegisterCreatedObjectUndo(gameObject, $"Create Object: {gameObject.name}");
         Selection.activeGameObject = gameObject;
+
 
         // For prefabs, let's mark the scene as dirty for saving
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());

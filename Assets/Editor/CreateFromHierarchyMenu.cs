@@ -21,9 +21,15 @@ public class CreateFromHierarchyMenu
         CreateUtils.CreatePrefab("RayMarching/RM_Objs/RM_Box");
     }
 
-    [MenuItem("GameObject/Ray Marching/RM Menger Sponge", false, 2)]
+    [MenuItem("GameObject/Ray Marching/RM Menger Sponge", false, 3)]
     public static void CreateRM_MengerSponge(MenuCommand menuCommand)
     {
         CreateUtils.CreatePrefab("RayMarching/RM_Objs/RM_Menger_Sponge");
+    }
+
+    [MenuItem("GameObject/Ray Marching/RM Cloud", false, 4)]
+    public static void CreateRM_Cloud(MenuCommand menuCommand)
+    {
+        CreateUtils.CreatePrefab("RayMarching/RM_Objs/RM_Cloud");
     }
 }
