@@ -44,4 +44,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6fcb0bc40841cf4dbc61f5426ce9562, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RayMarcherObjManager
-  m_RayMarcherObjs: []
+  m_LightTransform: {fileID: 0}
+  m_KValue: 1
+  m_RepetitionActive: 0
+  _RepetitionCellSize: {x: 1, y: 1, z: 1}
+  m_StepSize: 0.1
+  m_DensityScale: 0.2
+  m_LightStepSize: 0.33
+  m_LightAbsorb: 2
+  m_DarknessThreshold: 0
+  m_Transmittance: 2
+  m_DefaultObjs: []
+  m_SmoothUnionObjs: []
+  m_SmoothSubtractionObjs: []
+  m_SmoothIntersectionObjs: []
+  m_CloudsObjs: []
