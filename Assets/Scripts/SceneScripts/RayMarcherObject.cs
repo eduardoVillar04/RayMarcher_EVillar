@@ -1,9 +1,21 @@
 using UnityEngine;
 
-[ExecuteAlways]
 public class RayMarcherObject : MonoBehaviour
 {
-    public PrimitiveType primType = PrimitiveType.SPHERE;
+    [SerializeField] private PrimitiveType _primType = PrimitiveType.SPHERE;
+    public PrimitiveType primType
+    {
+        get => _primType;
+        set
+        {
+            if (_primType == value) return;
+
+            // Refresh the entry to account for new primtype
+            RayMarcherObjManager.Instance.RemoveObjFromList(this, operationType);
+            _primType = value;
+            RayMarcherObjManager.Instance.AddObjToList(this, operationType);
+        }
+    }
 
     // We need to update the list the obj is whenever the operation type changes
     [SerializeField] private OperationType _operationType;
@@ -12,9 +24,7 @@ public class RayMarcherObject : MonoBehaviour
         get => _operationType;
         set
         {
-            if (_operationType == value)
-                return;
-            Debug.Log("changing");
+            if (_operationType == value) return;
             RayMarcherObjManager.Instance.RemoveObjFromList(this, operationType);
             _operationType = value;
             RayMarcherObjManager.Instance.AddObjToList(this, operationType);
@@ -24,6 +34,9 @@ public class RayMarcherObject : MonoBehaviour
     public Vector3 size = Vector3.one;
 
     public bool drawGizmos = true;
+
+    private OperationType lastOperationType;
+    private PrimitiveType lastPrimeType;
 
     private void Start()
     {
@@ -35,6 +48,9 @@ public class RayMarcherObject : MonoBehaviour
         {
             RayMarcherObjManager.Instance.AddObjToList(this, operationType);
         }
+
+        lastOperationType = operationType;
+        lastPrimeType = primType;
     }
 
     private void OnDisable()
@@ -68,12 +84,45 @@ public class RayMarcherObject : MonoBehaviour
                 break;
         }
     }
+
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (!Application.isPlaying) return;
+
+        var rmManager = RayMarcherObjManager.Instance;
+        if (rmManager == null) return;
+
+        // OPERATION TYPE
+        if (lastOperationType != operationType)
+        {
+            rmManager.RemoveObjFromList(this, lastOperationType);
+            lastOperationType = operationType;
+            rmManager.AddObjToList(this, operationType);
+        }
+
+        // PRIMITIVE TYPE
+        if (lastPrimeType != primType)
+        {
+            // Force the last primType onto the object so it is removed properly from the manager
+            PrimitiveType current = _primType;
+            _primType = lastPrimeType;
+
+            rmManager.RemoveObjFromList(this, operationType);
+
+            _primType = current;
+            lastPrimeType = current;
+
+            rmManager.AddObjToList(this, operationType);
+        }
+    }
+#endif
 }
 
 public enum PrimitiveType
 {
-    NONE = -1,
-    SPHERE,
+    SPHERE = 0,
     BOX,
     MENGER_SPONGE,
     CLOUD

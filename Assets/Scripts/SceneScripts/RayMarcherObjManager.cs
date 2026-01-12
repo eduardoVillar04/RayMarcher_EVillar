@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteAlways]
 public class RayMarcherObjManager : MonoBehaviour
 {
     public static RayMarcherObjManager Instance;
