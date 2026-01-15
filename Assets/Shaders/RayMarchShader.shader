@@ -314,7 +314,7 @@ Shader "Custom/RayMarchShader"
                 return dif;
             }
 
-            bool CheckForDepth(float3 p, float2 uv)
+            bool CheckForDepth(float3 p, float2 uv, out float eyeDepth)
             {
                 // Hit pos from WS -> VS
                 float3 pView = mul(UNITY_MATRIX_V, float4(p, 1)).xyz;
@@ -324,7 +324,7 @@ Shader "Custom/RayMarchShader"
                 // Sample depth texture
                 float rawDepth = SampleSceneDepth(uv);
                 // Denormalize it
-                float eyeDepth = LinearEyeDepth(rawDepth);
+                eyeDepth = LinearEyeDepth(rawDepth);
                  
                 // if(rayDepth > eyeDepth) discard;
                 return rayDepth > eyeDepth;
@@ -344,12 +344,19 @@ Shader "Custom/RayMarchShader"
 
                 float d = RayMarch(camPos, rD);
 
-                //Ignore far away or occluded points
-                if(d >= MAX_DIST) return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
-                
                 float3 p = camPos + rD * d;
                 
-                if(CheckForDepth(p, input.texcoord)) return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
+                // Check if unity objects are first, and update depth channel if so
+                float eyeDepth;
+                if(CheckForDepth(p, input.texcoord, eyeDepth))
+                {
+                    color = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
+                    color.a = eyeDepth / MAX_DIST;
+                    return color;
+                }
+
+                //Ignore far away or occluded points
+                if(d >= MAX_DIST) return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord);
 
                 float dif = GetLight(p);
                 float depth = d / MAX_DIST;
