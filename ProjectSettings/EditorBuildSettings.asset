@@ -10,7 +10,7 @@ EditorBuildSettings:
     guid: 996e00672adfd1a4d9e9307d86bc2330
   - enabled: 1
     path: Assets/Scenes/SdfOperationsDemo.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    guid: 5b4b20a5e43f8ca45bc615f7259b3c78
   - enabled: 1
     path: Assets/Scenes/SpaceRepetitionDemo.unity
     guid: c692705a043824146b47278520aceb6a

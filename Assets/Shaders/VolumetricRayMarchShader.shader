@@ -191,7 +191,6 @@ Shader "Custom/VolumetricRayMarchShader"
                 float finalAlpha = 1 - result.g;
 
                 float4 rayCol = SAMPLE_TEXTURE2D_X(_RayMarchTex, sampler_RayMarchTex, input.texcoord);
-                float rmdepth = rayCol.a * MAX_DIST;
 
                 // If the cloud is behind the object dont blend
                 float3 outRGB;
