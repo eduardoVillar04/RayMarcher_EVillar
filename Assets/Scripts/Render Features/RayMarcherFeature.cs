@@ -189,21 +189,16 @@ public class RayMarcherFeature : ScriptableRendererFeature
     // This method is called when setting up the renderer once per-camera.
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        // Early exit if there are no materials
-        if (m_RayMarcherMat == null)
-        {
-            Debug.LogWarning("RayMarcher material is null and will be skipped.");
-        }
+        if(RayMarcherObjManager.Instance == null) return;
+
+        if (m_RayMarcherMat == null) Debug.LogWarning("RayMarcher material is null and will be skipped.");
         else
         {
             m_RayMarcherPass.Setup(m_RayMarcherMat, m_RayMarchColorRT);
             renderer.EnqueuePass(m_RayMarcherPass);        
         }
 
-        if(m_VolumetricRayMarcherPass == null)
-        {
-            Debug.LogWarning("VolumetricRayMarcher material is null and will be skipped.");
-        }
+        if(m_VolumetricRayMarchMat == null) Debug.LogWarning("VolumetricRayMarcher material is null and will be skipped.");
         else
         {
             m_VolumetricRayMarcherPass.Setup(m_VolumetricRayMarchMat, m_CloudText3D, m_RayMarchColorRT);

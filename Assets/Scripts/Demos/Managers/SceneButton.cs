@@ -8,4 +8,9 @@ public class SceneButton : MonoBehaviour
     {
         SceneManagerController.Instance.LoadScene(m_Scene);
     }
+
+    public void Quit()
+    {
+        SceneManagerController.Instance.Quit();
+    }
 }
