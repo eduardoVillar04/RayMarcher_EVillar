@@ -40,7 +40,6 @@ public class SceneManagerController : MonoBehaviour
 
     public void Quit()
     {
-        Debug.Log("hola");
         Application.Quit();
     }
 
